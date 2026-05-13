@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="Link Native Libraries" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <_Istok_WebGPU_Native_StaticLibPath Condition="'$(RuntimeIdentifier)' == 'iossimulator-x64'">$(MSBuildThisFileDirectory)../../runtimes/iossimulator-x64/native/libwgpu_native.a</_Istok_WebGPU_Native_StaticLibPath>
+            <_Istok_WebGPU_Native_StaticLibPath Condition="'$(RuntimeIdentifier)' == 'iossimulator-arm64'">$(MSBuildThisFileDirectory)../../runtimes/iossimulator-arm64/native/libwgpu_native.a</_Istok_WebGPU_Native_StaticLibPath>
+            <_Istok_WebGPU_Native_StaticLibPath Condition="'$(RuntimeIdentifier)' == 'ios-arm64'">$(MSBuildThisFileDirectory)../../runtimes/ios-arm64/native/libwgpu_native.a</_Istok_WebGPU_Native_StaticLibPath>
+        </PropertyGroup>
+    
+        <ItemGroup Condition="'$(_Istok_WebGPU_Native_StaticLibPath)' != ''">
+            <NativeReference Include="$(_Istok_WebGPU_Native_StaticLibPath)">
+                <Kind>Static</Kind>
+                <Forceload>True</Forceload>
+                <IsCxx>True</IsCxx>
+                <SmartLink>False</SmartLink>
+                <LinkerFlags>-framework Foundation -framework IOSurface -framework Metal -framework IOKit -framework QuartzCore</LinkerFlags>
+            </NativeReference>
+        </ItemGroup>
+    </Target>
+</Project>

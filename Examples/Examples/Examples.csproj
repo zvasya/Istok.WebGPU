@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+        <PackageReference Include="Silk.NET.Windowing" Version="2.22.0"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\AssetManager\AssetManager.csproj" />
+      <ProjectReference Include="..\..\Istok.WebGPU.View\Istok.WebGPU.View.csproj" />
+      <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
+    </ItemGroup>
+</Project>

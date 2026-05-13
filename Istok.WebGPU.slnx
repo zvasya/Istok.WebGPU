@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/Examples/">
+    <Project Path="Examples/ExampleAndroid/ExampleAndroid.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="Examples/ExampleBrowser/ExampleBrowser.csproj" />
+    <Project Path="Examples/ExampleiOS/ExampleiOS.csproj" />
+    <Project Path="Examples/Examples/Examples.csproj" />
+    <Project Path="Examples/ExampleStandalone/ExampleStandalone.csproj" />
+  </Folder>
+  <Folder Name="/Native/">
+    <Project Path="Istok.WebGPU.Native.Android\Istok.WebGPU.Native.Android.csproj" />
+    <Project Path="Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />
+    <Project Path="Istok.WebGPU.Native.iOS\Istok.WebGPU.Native.iOS.csproj" />
+    <Project Path="Istok.WebGPU.Native\Istok.WebGPU.Native.csproj" />
+  </Folder>
+  <Project Path="AssetManager/AssetManager.csproj" />
+  <Project Path="Istok.WebGPU.LowLevel.Generator\Istok.WebGPU.LowLevel.Generator.csproj" />
+  <Project Path="Istok.WebGPU.LowLevel\Istok.WebGPU.LowLevel.csproj" />
+  <Project Path="Istok.WebGPU.View.Browser\Istok.WebGPU.View.Browser.csproj" />
+  <Project Path="Istok.WebGPU.View.SDL\Istok.WebGPU.View.SDL.csproj" />
+  <Project Path="Istok.WebGPU.View\Istok.WebGPU.View.csproj" />
+  <Project Path="Istok.WebGPU\Istok.WebGPU.csproj" />
+</Solution>

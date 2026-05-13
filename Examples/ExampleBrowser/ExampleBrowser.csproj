@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Required in order to take EmccFlags into account -->
+        <WasmBuildNative>true</WasmBuildNative>
+        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+        <RootNamespace>TestWebGpuWasm</RootNamespace>
+    </PropertyGroup>
+
+    <Import Project="..\..\Istok.WebGPU.Native.Browser\buildTransitive\net10.0\Istok.WebGPU.Native.targets" />
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0-rc.1.25451.107"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.1.25451.107"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-rc.1.25451.107" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Istok.WebGPU.View.Browser\Istok.WebGPU.View.Browser.csproj" />
+        <ProjectReference Include="..\Examples\Examples.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />
+    </ItemGroup>
+
+
+    <Target Name="CopyAssets" BeforeTargets="AssignTargetPaths">
+        <ItemGroup>
+            <AssetsSourceFiles Include="..\Assets\**\*.*" />
+        </ItemGroup>
+        <MakeDir Directories="wwwroot"/>
+        <Copy
+                SourceFiles="@(AssetsSourceFiles)"
+                DestinationFolder="wwwroot/%(RecursiveDir)"
+                SkipUnchangedFiles="true" />
+    </Target>
+
+</Project>

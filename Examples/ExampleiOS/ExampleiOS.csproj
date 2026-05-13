@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0-ios</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+        <ValidateXcodeVersion>false</ValidateXcodeVersion>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Content Include="..\Assets\**\*.*">
+            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.SDL" Version="2.23.0" />
+<!--        <PackageReference Include="Silk.NET.Input.Sdl" Version="2.23.0" />-->
+        <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.23.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Istok.WebGPU.Native.iOS\Istok.WebGPU.Native.iOS.csproj" />
+        <ProjectReference Include="..\Examples\Examples.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU.View.SDL\Istok.WebGPU.View.SDL.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\..\Istok.WebGPU.Native.iOS\buildTransitive\net10.0-ios\Istok.WebGPU.Native.targets" />
+
+</Project>
