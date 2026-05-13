@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <EmccExtraLDFlags>$(EmccExtraLDFlags)
+            --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu_enum_tables.js
+            --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu_generated_sig_info.js
+            --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu_generated_struct_info.js
+            --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu.js
+            --export=stackSave --export=stackRestore
+        </EmccExtraLDFlags>
+        <WasmBuildNative>true</WasmBuildNative>
+    </PropertyGroup>
+    <ItemGroup>
+        <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)../../wwwroot/**/*.*" />
+        <NativeFileReference Include="$(MSBuildThisFileDirectory)../../runtimes/browser-wasm/wgpu_native.a" />
+    </ItemGroup>
+</Project>
