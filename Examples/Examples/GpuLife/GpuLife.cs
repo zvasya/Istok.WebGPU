@@ -180,12 +180,12 @@ public class GpuLife : ExampleBase
 		{
 			ColorAttachments =
 			[
-				new GPURenderPassColorAttachment()
+				new WGPURenderPassColorAttachment()
 				{
-					View = contextTextureView,
-					ClearValue = new WGPUColor() { r = 0, g = 0, b = 0, a = 0 },
-					LoadOp = WGPULoadOp.Clear,
-					StoreOp = WGPUStoreOp.Store,
+					view = contextTextureView,
+					clearValue = new WGPUColor() { r = 0, g = 0, b = 0, a = 0 },
+					loadOp = WGPULoadOp.Clear,
+					storeOp = WGPUStoreOp.Store,
 				},
 			],
 		};

@@ -39,7 +39,7 @@ public unsafe class GPUCommandEncoder(WGPUCommandEncoder commandEncoder, string?
 		using (descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 		{
 				
-			var renderPassDescriptor = default(WGPUComputePassDescriptor) with
+			var renderPassDescriptor = new WGPUComputePassDescriptor() with
 			{
 				label = descriptorLabelPtr,
 				timestampWrites = &descriptor.TimestampWrites,
@@ -99,7 +99,7 @@ public unsafe class GPUCommandEncoder(WGPUCommandEncoder commandEncoder, string?
 	{
 		using (descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 		{
-			WGPUCommandBufferDescriptor commandBufferDescriptor = default(WGPUCommandBufferDescriptor) with
+			WGPUCommandBufferDescriptor commandBufferDescriptor = new WGPUCommandBufferDescriptor() with
 			{
 				label = descriptorLabelPtr
 			};

@@ -58,7 +58,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 		using (descriptor.Label.ToWGPUStringView(out var labelPtr))
 		{
 
-			WGPUBufferDescriptor bufferDescriptor = default(WGPUBufferDescriptor) with
+			WGPUBufferDescriptor bufferDescriptor = new WGPUBufferDescriptor() with
 			{
 				label = labelPtr,
 				usage = descriptor.Usage,
@@ -76,7 +76,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 		using(descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 			fixed (WGPUTextureFormat* viewFormatsPtr = descriptor.ViewFormats)
 			{
-				var textureDescriptor = default(WGPUTextureDescriptor) with
+				var textureDescriptor = new WGPUTextureDescriptor() with
 				{
 					label = descriptorLabelPtr,
 					usage = descriptor.Usage,
@@ -104,7 +104,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 	{
 		using (descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 		{
-			var samplerDescriptor = default(WGPUSamplerDescriptor) with
+			var samplerDescriptor = new WGPUSamplerDescriptor() with
 			{
 				label = descriptorLabelPtr,
 				addressModeU = descriptor.AddressModeU,
@@ -131,7 +131,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 			
 			fixed (WGPUBindGroupLayoutEntry* entriesPtr = descriptor.Entries)
 			{
-				var bindGroupLayoutDescriptor = default(WGPUBindGroupLayoutDescriptor) with
+				var bindGroupLayoutDescriptor = new WGPUBindGroupLayoutDescriptor() with
 				{
 					label = descriptorLabelPtr,
 					entryCount = (UIntPtr)descriptor.Entries.Length,
@@ -153,7 +153,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 			for (var i = 0; i < count; i++) 
 				bindGroupLayouts[i] = descriptor.BindGroupLayouts[i]._handle;
 
-			var pipelineLayoutDescriptor = default(WGPUPipelineLayoutDescriptor) with
+			var pipelineLayoutDescriptor = new WGPUPipelineLayoutDescriptor() with
 			{
 				label = descriptorLabelPtr,
 				bindGroupLayoutCount = (UIntPtr)count,
@@ -174,7 +174,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 
 			fixed (WGPUBindGroupEntry* entriesPtr = descriptor.Entries)
 			{
-				var bindGroupLayoutDescriptor = default(WGPUBindGroupDescriptor) with
+				var bindGroupLayoutDescriptor = new WGPUBindGroupDescriptor() with
 				{
 					label = descriptorLabelPtr,
 					layout = descriptor.Layout._handle,
@@ -210,7 +210,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 			
 			// fixed (ShaderModuleCompilationHint* hintsPtr = descriptor.CompilationHints)
 			{
-				var shaderModuleDescriptor = default(WGPUShaderModuleDescriptor) with
+				var shaderModuleDescriptor = new WGPUShaderModuleDescriptor() with
 				{
 					nextInChain = (ChainedStruct*)(&wgslDescriptor),
 					label = labelPtr,
@@ -232,7 +232,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 			WGPUComputePipeline computePipeline;
 			fixed (WGPUConstantEntry* constants = descriptor.Compute.Constants)
 			{
-				var computePipelineDescriptor = default(WGPUComputePipelineDescriptor) with
+				var computePipelineDescriptor = new WGPUComputePipelineDescriptor() with
 				{
 					label = labelPtr,
 					layout = descriptor.Layout._handle,
@@ -301,7 +301,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 					};
 				}
 				
-				WGPURenderPipelineDescriptor renderPipelineDescriptor = default(WGPURenderPipelineDescriptor) with
+				WGPURenderPipelineDescriptor renderPipelineDescriptor = new WGPURenderPipelineDescriptor() with
 				{
 					label = descriptorLabelPtr,
 					layout = descriptor.Layout._handle,
@@ -335,7 +335,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 	{
 		using (descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 		{
-			var commandEncoderDescriptor = default(WGPUCommandEncoderDescriptor) with
+			var commandEncoderDescriptor = new WGPUCommandEncoderDescriptor() with
 			{
 				label = descriptorLabelPtr,
 			};
@@ -352,7 +352,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 			WGPURenderBundleEncoder renderBundleEncoder;
 			fixed (WGPUTextureFormat* colorFormatsPtr = descriptor.ColorFormats)
 			{
-				var renderBundleEncoderDescriptor = default(WGPURenderBundleEncoderDescriptor) with
+				var renderBundleEncoderDescriptor = new WGPURenderBundleEncoderDescriptor() with
 				{
 					label = descriptorLabelPtr,
 					colorFormatCount = (nuint)descriptor.ColorFormats.Length,
@@ -374,7 +374,7 @@ public unsafe class GPUDevice(WGPUDevice device, string? label, GPUAdapterInfo a
 	{
 		using (descriptor.Label.ToWGPUStringView(out WGPUStringView descriptorLabelPtr))
 		{
-			var querySetDescriptor = default(WGPUQuerySetDescriptor) with
+			var querySetDescriptor = new WGPUQuerySetDescriptor() with
 			{
 				label = descriptorLabelPtr,
 				type = descriptor.Type,

@@ -180,7 +180,7 @@ static void EmitStructs(StringBuilder structsSb, StringBuilder functionsSb, Json
 		string? structType = s.TryGetProperty("type", out JsonElement typeEl) ? typeEl.GetString() : null;
 
 		structsSb.AppendLine("[StructLayout(LayoutKind.Sequential)]");
-		structsSb.Append("public unsafe struct ").AppendLine(ToKnownType(name));
+		structsSb.Append("public unsafe struct ").Append(ToKnownType(name)).AppendLine("()");
 		structsSb.AppendLine("{");
 
 		EmitChainPrefix(structsSb, structType);
@@ -236,7 +236,13 @@ static void EmitMember(StringBuilder sb, JsonElement member)
 	sb.Append("\t\tpublic ").Append(ToKnownType(type));
 	if (pointer != null)
 		sb.Append("*");
-	sb.Append(" ").Append(memberName.ToCamelCase()).AppendLine(";");
+	sb.Append(" ").Append(memberName.ToCamelCase());
+
+	if (TryGetMemberDefault(member, out string csExpression))
+	{
+		sb.Append(" = ").Append(csExpression);
+	}
+	sb.AppendLine(";");
 }
 
 static void EmitObjects(StringBuilder objectsSb, StringBuilder functionsSb, JsonElement root)
@@ -451,4 +457,67 @@ static void ParseFunction(StringBuilder functionsSb, string functionName, string
 	}
 
 	functionsSb.AppendLine(");");
+}
+
+static bool TryGetMemberDefault(JsonElement member, out string csExpression)
+{
+	csExpression = "";
+	if (!member.TryGetProperty("default", out JsonElement defEl))
+		return false;
+
+	string type = member.GetProperty("type").GetString()!;
+
+	switch (defEl.ValueKind)
+	{
+		case JsonValueKind.Null:
+			return false;
+
+		case JsonValueKind.False:
+			csExpression = "false";
+			return true;
+
+		case JsonValueKind.True:
+			csExpression = "true";
+			return true;
+
+		case JsonValueKind.Number:
+		{
+			string raw = defEl.GetRawText();
+			csExpression = raw; // TODO: process float?
+			return true;
+		}
+
+		case JsonValueKind.String:
+		{
+			string value = defEl.GetString()!;
+
+			if (value == "zero")
+				return false;
+
+			if (value.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+			{
+				csExpression = value;
+				return true;
+			}
+
+			const string constantPrefix = "constant.";
+			if (value.StartsWith(constantPrefix, StringComparison.InvariantCulture))
+			{
+				csExpression = "WebGPUNative." + value[constantPrefix.Length..].ToPascalCase();
+				return true;
+			}
+
+			if (type.StartsWith("enum.", StringComparison.InvariantCulture)
+			    || type.StartsWith("bitflag.", StringComparison.InvariantCulture))
+			{
+				csExpression = ToKnownType(type) + "." + ToValidEnumName(value).ToPascalCase();
+				return true;
+			}
+
+			throw new NotSupportedException($"Unknown default value '{value}' for type '{type}'.");
+		}
+
+		default:
+			throw new NotSupportedException($"Unsupported default JSON kind '{defEl.ValueKind}' for type '{type}'.");
+	}
 }

@@ -308,12 +308,12 @@ public class ExampleComputeBoids : ExampleBase
         {
             ColorAttachments =
             [
-                new GPURenderPassColorAttachment
+                new WGPURenderPassColorAttachment
                 {
-                    View = textureView,
-                    ClearValue = new WGPUColor { r = 0, g = 0, b = 0, a = 1 },
-                    LoadOp = WGPULoadOp.Clear,
-                    StoreOp = WGPUStoreOp.Store,
+                    view = textureView,
+                    clearValue = new WGPUColor { r = 0, g = 0, b = 0, a = 1 },
+                    loadOp = WGPULoadOp.Clear,
+                    storeOp = WGPUStoreOp.Store,
                 }
             ],
         };
