@@ -14,7 +14,7 @@ public unsafe class GPUTexture(WGPUTexture texture, string? label) : GPUObjectWi
 		{
 			WGPUTextureView textureView;
 			{
-				var textureViewDescriptor = default(WGPUTextureViewDescriptor) with
+				var textureViewDescriptor = new WGPUTextureViewDescriptor() with
 				{
 					label = labelPtr,
 					format = descriptor.Format,

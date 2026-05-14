@@ -9,6 +9,6 @@ public ref struct GPURenderPipelineDescriptor()
 	public required GPUVertexState Vertex;
 	public GPUPrimitiveState Primitive = new GPUPrimitiveState();
 	public ref WGPUDepthStencilState DepthStencil = ref Unsafe.NullRef<WGPUDepthStencilState>();
-    public GPUMultisampleState Multisample = new GPUMultisampleState();
+    public WGPUMultisampleState Multisample = new WGPUMultisampleState();
 	public OptionalRef<GPUFragmentState> Fragment;
 }

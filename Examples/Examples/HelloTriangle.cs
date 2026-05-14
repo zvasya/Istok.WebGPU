@@ -86,12 +86,12 @@ public class HelloTriangle : ExampleBase
 
 		var renderPassDescriptor = new GPURenderPassDescriptor() 
 		{
-			ColorAttachments = [ new GPURenderPassColorAttachment() 
+			ColorAttachments = [ new WGPURenderPassColorAttachment() 
 			{
-				View = textureView,
-				ClearValue = new WGPUColor { r = 0, g = 1, b = 0, a = 0 }, // Clear to transparent
-				LoadOp = WGPULoadOp.Clear,
-				StoreOp = WGPUStoreOp.Store,
+				view = textureView,
+				clearValue = new WGPUColor { r = 0, g = 1, b = 0, a = 0 }, // Clear to transparent
+				loadOp = WGPULoadOp.Clear,
+				storeOp = WGPUStoreOp.Store,
 			},
 			],
 		};

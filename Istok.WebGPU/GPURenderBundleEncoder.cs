@@ -12,7 +12,7 @@ public unsafe class GPURenderBundleEncoder(WGPURenderBundleEncoder renderBundleE
 	{
 		using (descriptor.Label.ToWGPUStringView(out var descriptorLabelPtr))
 		{
-			WGPURenderBundleDescriptor renderBundleDescriptor = default(WGPURenderBundleDescriptor) with
+			WGPURenderBundleDescriptor renderBundleDescriptor = new WGPURenderBundleDescriptor() with
 			{
 				label = descriptorLabelPtr,
 			};
