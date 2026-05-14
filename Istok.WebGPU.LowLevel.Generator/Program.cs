@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Istok.WebGPU.LowLevel.Generaror;
-using static Istok.WebGPU.LowLevel.Generaror.WgpuTypes;
+using Istok.WebGPU.LowLevel.Generator;
+using static Istok.WebGPU.LowLevel.Generator.WgpuTypes;
 
 using JsonDocument doc = ReadJson(Path.Combine(AppContext.BaseDirectory, "codegen", "webgpu.json"));
 JsonElement root = doc.RootElement;

@@ -9,7 +9,7 @@
         <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <RootNamespace>TestWebGpuWasm</RootNamespace>
+        <RootNamespace>ExampleBrowser</RootNamespace>
     </PropertyGroup>
 
     <Import Project="..\..\Istok.WebGPU.Native.Browser\buildTransitive\net10.0\Istok.WebGPU.Native.targets" />
