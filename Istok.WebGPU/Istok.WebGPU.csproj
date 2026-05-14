@@ -7,6 +7,9 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>preview</LangVersion>
         <RootNamespace>Istok.WebGPU</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU</PackageId>
+        <Description>High-performance cross-platform C# wrapper for WebGPU with a web-idiomatic API for Windows, Linux, macOS, iOS, Android, and WebAssembly.</Description>
     </PropertyGroup>
 
     <ItemGroup>

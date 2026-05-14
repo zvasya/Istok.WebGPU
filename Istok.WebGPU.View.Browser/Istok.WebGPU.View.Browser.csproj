@@ -6,6 +6,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Istok.WebGPU.View</RootNamespace>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.View.Browser</PackageId>
+        <Description>Blazor/Razor canvas view component for Istok.WebGPU (browser-wasm surface via HTML canvas).</Description>
     </PropertyGroup>
 
     <ItemGroup>

@@ -5,9 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.Native</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native</PackageId>
+        <Description>Native WebGPU runtime binaries (wgpu-native) for Windows, Linux, and macOS, packaged for use with Istok.WebGPU.</Description>
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes\" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 </Project>

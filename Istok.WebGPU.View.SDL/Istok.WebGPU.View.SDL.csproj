@@ -6,6 +6,9 @@
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.View</RootNamespace>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.View.SDL</PackageId>
+        <Description>SDL-based view (windowing/surface) for Istok.WebGPU built on Silk.NET.Windowing.Sdl.</Description>
     </PropertyGroup>
     
     <ItemGroup>
