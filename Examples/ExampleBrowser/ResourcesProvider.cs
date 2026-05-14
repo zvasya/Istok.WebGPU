@@ -1,6 +1,6 @@
 using AssetManager;
 
-namespace ExampleiOS;
+namespace ExampleBrowser;
 
 public class ResourcesProvider(HttpClient http) : IResourcesProvider
 {

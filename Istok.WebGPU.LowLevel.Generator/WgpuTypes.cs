@@ -1,4 +1,4 @@
-namespace Istok.WebGPU.LowLevel.Generaror;
+namespace Istok.WebGPU.LowLevel.Generator;
 
 public static class WgpuTypes
 {

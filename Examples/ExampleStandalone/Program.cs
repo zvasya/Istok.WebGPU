@@ -1,15 +1,13 @@
 ﻿using Examples;
 using Examples.GpuLife;
-using ExampleStandalone;
 using Istok.WebGPU;
 using Istok.WebGPU.LowLevel;
+using Istok.WebGPU.View;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using Istok.WebGPU.View;
 using Window = Silk.NET.Windowing.Window;
-using static Istok.WebGPU.LowLevel.WebGPUNative;
 
-namespace WebGPUTexturedQuad;
+namespace ExampleStandalone;
 
 // ReSharper disable once InconsistentNaming
 public static unsafe class WebGPUTexturedQuad

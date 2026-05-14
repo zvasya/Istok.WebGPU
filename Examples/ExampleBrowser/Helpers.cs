@@ -1,12 +1,9 @@
-﻿using System.Runtime.InteropServices.JavaScript;
+﻿namespace ExampleBrowser;
 
-namespace TestWebGpuWasm
+public unsafe static class Helpers
 {
-    public unsafe static class Helpers
+    public static char* ToPointer(this string text)
     {
-        public static char* ToPointer(this string text)
-        {
-            return (char*)System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi(text);
-        }
+        return (char*)System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi(text);
     }
 }
