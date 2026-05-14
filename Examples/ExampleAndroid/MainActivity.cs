@@ -1,3 +1,4 @@
+using Android.Content.PM;
 using Istok.WebGPU.LowLevel;
 using Examples;
 using Examples.GpuLife;
@@ -10,7 +11,7 @@ using static Istok.WebGPU.LowLevel.WebGPUNative;
 
 namespace ExampleAndroid;
 
-[Activity(Label = "@string/app_name", MainLauncher = true)]
+[Activity(Label = "@string/app_name", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 public class MainActivity : SilkActivity
 {
 	GPU _Instance;
@@ -23,6 +24,7 @@ public class MainActivity : SilkActivity
 	protected override void OnRun()
 	{
 		const bool colorSrgb = true;
+		Silk.NET.Windowing.Sdl.SdlWindowing.Use();
 		
 		IView window = Silk.NET.Windowing.Window.GetView(ViewOptions.DefaultVulkan); // note also GetView, instead of Window.Create.
 		window.Initialize();
