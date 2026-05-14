@@ -6,6 +6,9 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RootNamespace>Istok.WebGPU.LowLevel</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.LowLevel</PackageId>
+        <Description>Auto-generated low-level C# bindings for WebGPU, produced from the webgpu.json specification.</Description>
     </PropertyGroup>
 
     <ItemGroup>

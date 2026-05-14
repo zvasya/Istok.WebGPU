@@ -10,10 +10,13 @@
         -->
         <IsTrimmable>true</IsTrimmable>
         <RootNamespace>Istok.WebGPU.Native.Android</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native.Android</PackageId>
+        <Description>Native WebGPU runtime binaries (wgpu-native) for Android, packaged for use with Istok.WebGPU.</Description>
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="runtimes\**\*" Pack="true" PackagePath="runtimes/" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes/" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

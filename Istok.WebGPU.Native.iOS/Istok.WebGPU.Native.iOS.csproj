@@ -5,12 +5,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.Native.iOS</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native.iOS</PackageId>
+        <Description>Native WebGPU runtime binaries (wgpu-native) for iOS and the iOS simulator, packaged for use with Istok.WebGPU.</Description>
     </PropertyGroup>
 
 
     <ItemGroup>
-        <None Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" />
-        <None Include="buildTransitive\net10.0-ios\Istok.WebGPU.Native.targets" Pack="true" PackagePath="buildTransitive\net10.0-ios" />
+        <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes\" />
+        <None Include="buildTransitive\net10.0-ios\Istok.WebGPU.Native.iOS.targets" Pack="true" PackagePath="buildTransitive\$(TargetFramework)$(TargetPlatformVersion)" />
     </ItemGroup>
     
 </Project>

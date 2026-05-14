@@ -5,9 +5,18 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.Native.Browser</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native.Browser</PackageId>
+        <Description>Native WebGPU runtime (Google Dawn / emdawnwebgpu) for browser-wasm, packaged for use with Istok.WebGPU.</Description>
     </PropertyGroup>
     
     <ItemGroup>
         <SupportedPlatform Include="browser"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes\" />
+        <None Include="wwwroot\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="wwwroot\" />
+        <None Include="buildTransitive\net10.0\Istok.WebGPU.Native.Browser.targets" Pack="true" PackagePath="buildTransitive\net10.0" />
     </ItemGroup>
 </Project>

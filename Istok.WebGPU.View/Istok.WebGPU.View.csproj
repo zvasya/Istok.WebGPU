@@ -5,6 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.View</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.View</PackageId>
+        <Description>Cross-platform view abstractions (windowing/surface) for Istok.WebGPU.</Description>
     </PropertyGroup>
 
     <ItemGroup>

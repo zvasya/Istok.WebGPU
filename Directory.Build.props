@@ -1,0 +1,31 @@
+<Project>
+
+    <PropertyGroup>
+        <Version>0.0.1-preview</Version>
+        <Authors>zvasya</Authors>
+        <Company>zvasya</Company>
+        <Copyright>Copyright (c) 2026 zvasya</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/zvasya/Istok.WebGPU</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/zvasya/Istok.WebGPU.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>webgpu graphics gpu rendering wgpu dawn crossplatform</PackageTags>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
+        <None Include="$(MSBuildThisFileDirectory)README.MD" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    </ItemGroup>
+
+</Project>
