@@ -52,6 +52,23 @@ public unsafe class GPUComputePassEncoder(WGPUComputePassEncoder computePassEnco
 		}
 	}
 
+	public void SetImmediates(uint offset, void* data, UIntPtr size)
+	{
+		wgpuComputePassEncoderSetImmediates(_handle, offset, data, size);
+	}
+	
+	public void SetImmediates<T>(in T data) where T : unmanaged
+	{
+		fixed(void* ptr = &data)
+			wgpuComputePassEncoderSetImmediates(_handle, 0, ptr, (UIntPtr)sizeof(T));
+	}
+	
+	public void SetImmediates<T>(in Span<T> data) where T : unmanaged
+	{
+		fixed(void* ptr = data)
+			wgpuComputePassEncoderSetImmediates(_handle, 0, ptr, (UIntPtr)(sizeof(T) * data.Length));
+	}
+
 	// public void SetBindGroup(uint index, GPUBindGroup? bindGroup, Uint32Array dynamicOffsetsData, GPUSize64 dynamicOffsetsDataStart, GPUSize32 dynamicOffsetsDataLength)
 	// {
 	// 	wgpuComputePassEncoderSetBindGroup(_handle, index, bindGroup._handle, )

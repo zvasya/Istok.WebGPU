@@ -91,6 +91,23 @@ public unsafe class GPURenderBundleEncoder(WGPURenderBundleEncoder renderBundleE
 		wgpuRenderBundleEncoderDrawIndexedIndirect(_handle, indirectBuffer._handle, indirectOffset);
 	}
 	
+	public void SetImmediates(uint offset, void* data, UIntPtr size)
+	{
+		wgpuRenderBundleEncoderSetImmediates(_handle, offset, data, size);
+	}
+		
+	public void SetImmediates<T>(in T data) where T : unmanaged
+	{
+		fixed(void* ptr = &data)
+			wgpuRenderBundleEncoderSetImmediates(_handle, 0, ptr, (UIntPtr)sizeof(T));
+	}
+	
+	public void SetImmediates<T>(in Span<T> data) where T : unmanaged
+	{
+		fixed(void* ptr = data)
+			wgpuRenderBundleEncoderSetImmediates(_handle, 0, ptr, (UIntPtr)(sizeof(T) * data.Length));
+	}
+	
 	public override void Dispose()
 	{
 		wgpuRenderBundleEncoderRelease(_handle);
