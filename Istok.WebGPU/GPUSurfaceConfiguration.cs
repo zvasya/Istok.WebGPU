@@ -1,8 +1,8 @@
 namespace Istok.WebGPU;
 
-public ref struct GPUSurfaceConfiguration(WGPUSurfaceConfiguration config)
+public ref struct GPUSurfaceConfiguration
 {
-	public GPUDevice Device;
+	public required GPUDevice Device;
 	public WGPUTextureFormat Format;
 	public WGPUTextureUsage Usage;
 	public ReadOnlySpan<WGPUTextureFormat> ViewFormats;

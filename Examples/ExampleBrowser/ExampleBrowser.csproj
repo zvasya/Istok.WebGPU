@@ -12,7 +12,7 @@
         <RootNamespace>ExampleBrowser</RootNamespace>
     </PropertyGroup>
 
-    <Import Project="..\..\Istok.WebGPU.Native.Browser\buildTransitive\net10.0\Istok.WebGPU.Native.targets" />
+    <Import Project="..\..\Istok.WebGPU.Native.Browser\buildTransitive\net10.0\Istok.WebGPU.Native.Browser.targets" />
     
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0-rc.1.25451.107"/>
