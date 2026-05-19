@@ -1,0 +1,17 @@
+﻿{
+  "solution": {
+    "path": "Istok.WebGPU.slnx",
+    "projects": [
+      "Istok.WebGPU.LowLevel.Generator/Istok.WebGPU.LowLevel.Generator.csproj",
+      "Istok.WebGPU.LowLevel/Istok.WebGPU.LowLevel.csproj",
+      "Istok.WebGPU.Native.Android/Istok.WebGPU.Native.Android.csproj",
+      "Istok.WebGPU.Native.Browser/Istok.WebGPU.Native.Browser.csproj",
+      "Istok.WebGPU.Native.iOS/Istok.WebGPU.Native.iOS.csproj",
+      "Istok.WebGPU.Native/Istok.WebGPU.Native.csproj",
+      "Istok.WebGPU.View.Browser/Istok.WebGPU.View.Browser.csproj",
+      "Istok.WebGPU.View.SDL/Istok.WebGPU.View.SDL.csproj",
+      "Istok.WebGPU.View/Istok.WebGPU.View.csproj",
+      "Istok.WebGPU/Istok.WebGPU.csproj"
+    ]
+  }
+}
