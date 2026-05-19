@@ -28,6 +28,6 @@
         <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
     </ItemGroup>
 
-    <Import Project="..\..\Istok.WebGPU.Native.iOS\buildTransitive\net10.0-ios\Istok.WebGPU.Native.targets" />
+    <Import Project="..\..\Istok.WebGPU.Native.iOS\buildTransitive\net10.0-ios\Istok.WebGPU.Native.iOS.targets" />
 
 </Project>

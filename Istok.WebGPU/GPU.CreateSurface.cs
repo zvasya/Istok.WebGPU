@@ -17,7 +17,7 @@ public unsafe partial class GPU
       }
     };
 
-    if (view.Native.X11.HasValue)
+    if (view.Native!.X11.HasValue)
     {
       WGPUSurfaceSourceXlibWindow descriptorFromXlibWindow = new WGPUSurfaceSourceXlibWindow()
       {
