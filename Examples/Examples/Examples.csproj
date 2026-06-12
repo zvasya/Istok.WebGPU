@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\AssetManager\AssetManager.csproj" />
+      <ProjectReference Include="..\..\Istok.Mathematics\Istok.Mathematics.csproj" />
       <ProjectReference Include="..\..\Istok.WebGPU.View\Istok.WebGPU.View.csproj" />
       <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
     </ItemGroup>
