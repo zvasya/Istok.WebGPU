@@ -24,16 +24,18 @@ public static unsafe class WebGPUTexturedQuad
 	public static void Main(string[] args)
 	{
 		//Create window
-		var options = WindowOptions.Default;
-		options.API = GraphicsAPI.None;
-		options.Size = new Vector2D<int>(800, 600);
-		options.FramesPerSecond = 60;
-		options.UpdatesPerSecond = 60;
-		options.Position = new Vector2D<int>(0, 0);
-		options.Title = "WebGPU Textured Quad";
-		options.IsVisible = true;
-		options.ShouldSwapAutomatically = false;
-		options.IsContextControlDisabled = true;
+		WindowOptions options = WindowOptions.Default with
+		{
+			API = GraphicsAPI.None,
+			Size = new Vector2D<int>(800, 600),
+			FramesPerSecond = 60,
+			UpdatesPerSecond = 60,
+			Position = new Vector2D<int>(0, 0),
+			Title = "WebGPU Examples",
+			IsVisible = true,
+			ShouldSwapAutomatically = false,
+			IsContextControlDisabled = true,
+		};
 
 		_Window = Window.Create(options);
 

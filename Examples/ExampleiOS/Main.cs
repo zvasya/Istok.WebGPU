@@ -26,12 +26,14 @@ SilkMobile.RunApp([], strings =>
 
     Window.PrioritizeSdl();
 
-    var options = ViewOptions.Default;
-    options.API = GraphicsAPI.None;
-    options.FramesPerSecond = 60;
-    options.UpdatesPerSecond = 60;
-    options.ShouldSwapAutomatically = false;
-    options.IsContextControlDisabled = true;
+    var options = ViewOptions.Default with
+    {
+        API = GraphicsAPI.None,
+        FramesPerSecond = 60,
+        UpdatesPerSecond = 60,
+        ShouldSwapAutomatically = false,
+        IsContextControlDisabled = true,
+    };
 
     IView window = Window.GetView(options);
     window.Initialize();
@@ -39,7 +41,6 @@ SilkMobile.RunApp([], strings =>
     _Instance = GPU.Create();
     
     _Surface = _Instance.CreateWebGPUSurfaceIOS(window);
-
     {
         //Get adapter
         var requestAdapterOptions = new WGPURequestAdapterOptions
@@ -59,46 +60,10 @@ SilkMobile.RunApp([], strings =>
 
     {
         //Get device
-        WGPULimits limits = new WGPULimits
-        {
-            maxTextureDimension1D = LimitU32Undefined,
-            maxTextureDimension2D = LimitU32Undefined,
-            maxTextureDimension3D = LimitU32Undefined,
-            maxTextureArrayLayers = LimitU32Undefined,
-            maxBindGroups = LimitU32Undefined,
-            maxBindGroupsPlusVertexBuffers = LimitU32Undefined,
-            maxBindingsPerBindGroup = LimitU32Undefined,
-            maxDynamicUniformBuffersPerPipelineLayout = LimitU32Undefined,
-            maxDynamicStorageBuffersPerPipelineLayout = LimitU32Undefined,
-            maxSampledTexturesPerShaderStage = LimitU32Undefined,
-            maxSamplersPerShaderStage = LimitU32Undefined,
-            maxStorageBuffersPerShaderStage = 8,
-            maxStorageTexturesPerShaderStage = LimitU32Undefined,
-            maxUniformBuffersPerShaderStage = LimitU32Undefined,
-            maxUniformBufferBindingSize = LimitU64Undefined,
-            maxStorageBufferBindingSize = LimitU64Undefined,
-            minUniformBufferOffsetAlignment = LimitU32Undefined,
-            minStorageBufferOffsetAlignment = LimitU32Undefined,
-            maxVertexBuffers = LimitU32Undefined,
-            maxBufferSize = LimitU64Undefined,
-            maxVertexAttributes = LimitU32Undefined,
-            maxVertexBufferArrayStride = LimitU32Undefined,
-            maxInterStageShaderVariables = LimitU32Undefined,
-            maxColorAttachments = LimitU32Undefined,
-            maxColorAttachmentBytesPerSample = LimitU32Undefined,
-            maxComputeWorkgroupStorageSize = LimitU32Undefined,
-            maxComputeInvocationsPerWorkgroup = LimitU32Undefined,
-            maxComputeWorkgroupSizeX = LimitU32Undefined,
-            maxComputeWorkgroupSizeY = LimitU32Undefined,
-            maxComputeWorkgroupSizeZ = LimitU32Undefined,
-            maxComputeWorkgroupsPerDimension = LimitU32Undefined,
-            maxImmediateSize = LimitU32Undefined,
-        };
+        WGPULimits limits = new WGPULimits { maxStorageBuffersPerShaderStage = 8 };
         var deviceDescriptor = new GPUDeviceDescriptor
         {
             RequiredLimits = ref limits
-            // DeviceLostCallback = new PfnDeviceLostCallback((delegate* unmanaged[Cdecl]<DeviceLostReason, byte*, void*, void>)SilkMarshal.DelegateToPtr(DeviceLost, DelegatePointerKind.Passthrough)),
-            // deviceLostCallback = PfnDeviceLostCallback.Create(DeviceLost),
         };
 
         _Device = _Adapter.RequestDevice(deviceDescriptor).Result;

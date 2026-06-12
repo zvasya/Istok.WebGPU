@@ -16,8 +16,8 @@ public class HelloTriangle : ExampleBase
 	GPURenderPipeline pipeline;
 	public override async Task OnLoad()
 	{
-		var triangleVertWGSL = await _ResourcesProvider.LoadTextAsync("WebGPUSamples/Shaders/triangle.vert.wgsl");
-		var redFragWGSL = await _ResourcesProvider.LoadTextAsync("WebGPUSamples/Shaders/red.frag.wgsl");
+		var triangleVertWGSL = await _ResourcesProvider.LoadTextAsync("Shaders/TriangleExample/triangle.vert.wgsl");
+		var redFragWGSL = await _ResourcesProvider.LoadTextAsync("Shaders/TriangleExample/red.frag.wgsl");
 		
 		pipeline = _device.CreateRenderPipeline(new GPURenderPipelineDescriptor()
 		{
