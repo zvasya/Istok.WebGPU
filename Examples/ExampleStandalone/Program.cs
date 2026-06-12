@@ -1,5 +1,4 @@
 ﻿using Examples;
-using Examples.GpuLife;
 using Istok.WebGPU;
 using Istok.WebGPU.LowLevel;
 using Istok.WebGPU.View;
@@ -84,7 +83,7 @@ public static unsafe class WebGPUTexturedQuad
 		} //Get device
 
 		IWebGpuView webGpuView = new WebGpuSdlView(_Window);
-		_Example = new GpuLife(_Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
+		_Example = new ExampleCubeMap(_Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
 		_Example.OnLoad().Wait();
 		webGpuView.Render += _Example.WindowOnRender;
 		webGpuView.FramebufferResize += _Example.FramebufferResize;
