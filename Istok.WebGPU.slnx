@@ -15,6 +15,7 @@
     <Project Path="Istok.WebGPU.Native\Istok.WebGPU.Native.csproj" />
   </Folder>
   <Project Path="AssetManager/AssetManager.csproj" />
+  <Project Path="Istok.Mathematics/Istok.Mathematics.csproj" />
   <Project Path="Istok.WebGPU.LowLevel.Generator\Istok.WebGPU.LowLevel.Generator.csproj" />
   <Project Path="Istok.WebGPU.LowLevel\Istok.WebGPU.LowLevel.csproj" />
   <Project Path="Istok.WebGPU.View.Browser\Istok.WebGPU.View.Browser.csproj" />
