@@ -1,3 +1,4 @@
+using System.Text;
 using Silk.NET.Core.Native;
 
 namespace Istok.WebGPU;
@@ -26,7 +27,7 @@ public static class WGPUStringViewExtension
 				}
 
 				IntPtr labelPtr = SilkMarshal.StringToPtr(str);
-				stringView = new WGPUStringView() { data = (char*)labelPtr, length = (UIntPtr)str.Length };
+				stringView = new WGPUStringView() { data = (byte*)labelPtr, length = (UIntPtr)(Encoding.UTF8.GetByteCount(str) + 1)};
 				return new Scope(labelPtr);
 			}
 		}
