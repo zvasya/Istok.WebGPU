@@ -56,7 +56,7 @@ public partial class Home
 
             } //Get device
                 
-            _Example = new ExampleComputeBoids(_Device, CanvasView, _SurfaceCapabilities, _Surface, new ResourcesProvider(Http));
+            _Example = new ExampleCubeMap(_Device, CanvasView, _SurfaceCapabilities, _Surface, new ResourcesProvider(Http));
             await _Example.OnLoad();
             Logger.LogInformation($"Loaded");
             CanvasView.Render += _Example.WindowOnRender;
