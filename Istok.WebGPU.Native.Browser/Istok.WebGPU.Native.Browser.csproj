@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Istok.WebGPU.Native.Browser</RootNamespace>
@@ -17,6 +17,6 @@
     <ItemGroup>
         <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes\" />
         <None Include="wwwroot\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="wwwroot\" />
-        <None Include="buildTransitive\net10.0\Istok.WebGPU.Native.Browser.targets" Pack="true" PackagePath="buildTransitive\net10.0" />
+        <None Include="buildTransitive\net11.0\Istok.WebGPU.Native.Browser.targets" Pack="true" PackagePath="buildTransitive\net11.0" />
     </ItemGroup>
 </Project>

@@ -43,7 +43,7 @@ public static class WGPUStringViewExtension
 			}
 		}
 
-		public static WGPUStringView Empty =>
+		public static unsafe WGPUStringView Empty =>
 			new WGPUStringView()
 			{
 				data = null,

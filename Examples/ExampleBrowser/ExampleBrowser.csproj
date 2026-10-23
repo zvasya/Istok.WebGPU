@@ -4,29 +4,39 @@
         <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <!-- Required in order to take EmccFlags into account -->
         <WasmBuildNative>true</WasmBuildNative>
-        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
+        <WasmCachePath>$(MSBuildProjectDirectory)/obj/emscripten-cache</WasmCachePath>
+<!--        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>-->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
         <RootNamespace>ExampleBrowser</RootNamespace>
+        <EmccExtraCFlags>$(EmccExtraCFlags) --use-port=emdawnwebgpu</EmccExtraCFlags>
+        <EmccExtraLDFlags>$(EmccExtraLDFlags) --use-port=emdawnwebgpu -sASSERTIONS=0</EmccExtraLDFlags>
+        
     </PropertyGroup>
 
-    <Import Project="..\..\Istok.WebGPU.Native.Browser\buildTransitive\net10.0\Istok.WebGPU.Native.Browser.targets" />
+    <ItemGroup>
+        <EmccExportedRuntimeMethod Include="WebGPU" />
+    </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0-rc.1.25451.107"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-rc.1.25451.107"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-rc.1.25451.107" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0-rc.2.26504.105" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Istok.WebGPU.View.Browser\Istok.WebGPU.View.Browser.csproj" />
         <ProjectReference Include="..\Examples\Examples.csproj" />
         <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
-        <ProjectReference Include="..\..\Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />
+<!--        <ProjectReference Include="..\..\Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />-->
     </ItemGroup>
 
+    <Target Name="RegisterWgpuNativePInvokeModule" BeforeTargets="_GenerateManagedToNative">
+        <ItemGroup>
+            <_WasmPInvokeModules Include="wgpu_native" />
+        </ItemGroup>
+    </Target>
 
     <Target Name="CopyAssets" BeforeTargets="AssignTargetPaths">
         <ItemGroup>

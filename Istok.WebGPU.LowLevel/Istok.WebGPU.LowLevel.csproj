@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net10.0-ios</TargetFrameworks>
+        <TargetFrameworks>net11.0;net11.0-ios</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RootNamespace>Istok.WebGPU.LowLevel</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Istok.WebGPU.LowLevel</PackageId>
-        <Description>Auto-generated low-level C# bindings for WebGPU, produced from the webgpu.json specification.</Description>
+        <Description>Auto-generated low-level C# bindings for WebGPU, produced from the Dawn dawn.json specification.</Description>
     </PropertyGroup>
 
     <ItemGroup>

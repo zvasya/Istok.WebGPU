@@ -3,6 +3,13 @@ using Silk.NET.Core;
 
 namespace Istok.WebGPU.LowLevel;
 
+public unsafe readonly struct WGPUProc
+{
+	private readonly void* _handle;
+	public delegate* unmanaged[Cdecl]<void> Handle => (delegate* unmanaged[Cdecl]<void>) _handle;
+	public WGPUProc(delegate* unmanaged[Cdecl]<void> ptr) => _handle = ptr;
+}
+
 public unsafe readonly struct WGPUBufferMapCallback
 {
 	private readonly void* _handle;

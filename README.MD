@@ -8,7 +8,7 @@ The primary goal of this project is to provide a single, consistent API that all
 
 * **Web-Idiomatic Design:** The API is designed to closely mirror the Browser WebGPU API. This includes descriptor naming conventions and default values, making it intuitive for those familiar with the JavaScript/TypeScript standard.
 
-* **Auto-Generated:** Bindings are strictly generated from the official webgpu.json specification.
+* **Auto-Generated:** Bindings are strictly generated from Google Dawn's dawn.json specification.
 
 ## Supported Platforms
 
@@ -45,7 +45,7 @@ source ./emsdk_env.sh
 
 The solution is divided into several layers to ensure flexibility and ease of maintenance:
 
-* **`Istok.WebGPU.LowLevel.Generator`**: A specialized tool that parses the `webgpu.json` definition to generate C# bindings.
+* **`Istok.WebGPU.LowLevel.Generator`**: A specialized tool that parses Dawn's `dawn.json` definition to generate C# bindings, following the rules of Dawn's `dawn_json_generator.py`.
 * **`Istok.WebGPU.LowLevel`**: Contains the raw, auto-generated bindings.
 * **`Istok.WebGPU`**: The main high-level library. It wraps the low-level layer to provide the **Web-Idiomatic Design**.
 * **`Istok.WebGPU.Native.*`**: Projects (including `.Android`, `.Browser`, `.iOS`) that bundle the required native binaries for their respective platforms.

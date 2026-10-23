@@ -2,10 +2,17 @@
 using System.Text;
 using System.Text.Json;
 using Istok.WebGPU.LowLevel.Generator;
-using static Istok.WebGPU.LowLevel.Generator.WgpuTypes;
 
-using JsonDocument doc = ReadJson(Path.Combine(AppContext.BaseDirectory, "codegen", "webgpu.json"));
-JsonElement root = doc.RootElement;
+// Tag sets used by dawn_json_generator.py:
+//   include/dawn/webgpu.h:            enabled = dawn, emscripten, native, deprecated
+//   Dawn proc table / native:         enabled = dawn, native, deprecated
+//   webgpu-headers/webgpu.h upstream: enabled = native; disabled = dawn
+//   emdawnwebgpu webgpu.h:            enabled = emscripten
+string[] enabledTags = ["native"];
+string[] disabledTags = ["dawn"];
+
+using JsonDocument doc = ReadJson(Path.Combine(AppContext.BaseDirectory, "codegen", "dawn.json"));
+DawnApi api = new DawnApi(doc.RootElement, enabledTags, disabledTags);
 
 StringBuilder enumsSb = new StringBuilder();
 StringBuilder constantsSb = new StringBuilder();
@@ -24,13 +31,13 @@ AddHeader(delegatesSb, "using System.Runtime.InteropServices;");
 StartClass(constantsSb);
 StartClass(functionsSb);
 
-EmitConstants(constantsSb, root);
-EmitEnums(enumsSb, root);
-EmitBitflags(enumsSb, root);
-EmitStructs(structsSb, functionsSb, root);
-EmitObjects(objectsSb, functionsSb, root);
-EmitCallbacks(delegatesSb, structsSb, root);
-EmitFunctions(functionsSb, root);
+EmitConstants(constantsSb, api);
+EmitEnums(enumsSb, api);
+EmitBitmasks(enumsSb, api);
+EmitStructs(structsSb, api);
+EmitObjects(objectsSb, api);
+EmitDelegates(delegatesSb, api);
+EmitFunctions(functionsSb, api);
 
 EndClass(constantsSb);
 EndClass(functionsSb);
@@ -76,200 +83,98 @@ static void EndClass(StringBuilder stringBuilder)
 	stringBuilder.AppendLine("}");
 }
 
-static void EmitConstants(StringBuilder constantsSb, JsonElement root)
+static void EmitConstants(StringBuilder constantsSb, DawnApi api)
 {
-	if (!root.TryGetProperty("constants", out JsonElement constantsEl))
-		return;
-
-	foreach (JsonElement c in constantsEl.EnumerateArray())
+	foreach ((string name, JsonElement json) in api.ByCategory("constant"))
 	{
-		string? name = c.GetProperty("name").GetString();
-		string? value = c.GetProperty("value").GetString();
-		var (csType, csValue, csModifiers) = MapConstant(value);
-		constantsSb.Append("\tpublic ").Append(csModifiers).Append(" ").Append(csType).Append(" ")
-			.Append(name!.ToPascalCase()).Append(" = ").Append(csValue).AppendLine(";");
+		string csType = api.CsType(json.GetProperty("type").GetString()!);
+		var (csValue, modifiers) = DawnApi.ConstantValue(csType, json.GetProperty("value").GetString()!);
+		constantsSb.Append("\tpublic ").Append(modifiers).Append(' ').Append(csType).Append(' ')
+			.Append(name.ToPascalCase()).Append(" = ").Append(csValue).AppendLine(";");
 	}
 }
 
-static void EmitEnums(StringBuilder enumSb, JsonElement root)
+static void EmitEnums(StringBuilder enumsSb, DawnApi api)
 {
-	if (!root.TryGetProperty("enums", out JsonElement enumsEl))
-		return;
-
-	foreach (JsonElement e in enumsEl.EnumerateArray())
+	foreach ((string name, JsonElement json) in api.ByCategory("enum"))
 	{
-		string? name = e.GetProperty("name").GetString();
-		enumSb.Append("public enum ").AppendLine(ToKnownType(name!));
-		enumSb.AppendLine("{");
-
-		int i = 0;
-		foreach (JsonElement entry in e.GetProperty("entries").EnumerateArray())
-		{
-			if (entry.ValueKind == JsonValueKind.Null)
-			{
-				i++;
-				continue;
-			}
-
-			string? entryName = entry.GetProperty("name").GetString()!;
-			entryName = ToValidEnumName(entryName);
-			enumSb.Append("\t").Append(entryName.ToPascalCase()).Append(" = ").Append(i).AppendLine(",");
-			i++;
-		}
-
-		enumSb.AppendLine("}");
-		enumSb.AppendLine();
+		enumsSb.Append("public enum ").AppendLine(api.CsType(name));
+		enumsSb.AppendLine("{");
+		foreach ((string valueName, long value) in api.EnumValues(json))
+			enumsSb.Append('\t').Append(DawnApi.EnumValueName(valueName)).Append(" = 0x").Append(value.ToString("X8")).AppendLine(",");
+		enumsSb.AppendLine("}");
+		enumsSb.AppendLine();
 	}
 }
 
-static void EmitBitflags(StringBuilder enumSb, JsonElement root)
+static void EmitBitmasks(StringBuilder enumsSb, DawnApi api)
 {
-	if (!root.TryGetProperty("bitflags", out JsonElement bitflagsEl))
-		return;
-
-	foreach (JsonElement b in bitflagsEl.EnumerateArray())
+	foreach ((string name, JsonElement json) in api.ByCategory("bitmask"))
 	{
-		string? name = b.GetProperty("name").GetString();
-		
-		var entries = b.GetProperty("entries");
-		int idx = 0;
-
-		enumSb.AppendLine("[Flags]");
-		enumSb.Append("public enum ").Append(ToKnownType(name!)).AppendLine(" : ulong");
-		enumSb.AppendLine("{");
-
-		idx = 0;
-		foreach (JsonElement entry in entries.EnumerateArray())
-		{
-			if (entry.ValueKind == JsonValueKind.Null)
-			{
-				idx++;
-				continue;
-			}
-
-			string entryName = entry.GetProperty("name").GetString()!;
-			if (entry.TryGetProperty("value_combination", out JsonElement combEl))
-			{
-				entryName = ToValidEnumName(entryName);
-				enumSb.Append("\t").Append(entryName.ToPascalCase()).Append(" = ");
-				enumSb.AppendJoin(" | ", combEl.EnumerateArray().Select(combName => ToValidEnumName(combName.GetString()!).ToPascalCase()));
-				enumSb.AppendLine(",");
-			}
-			else
-			{
-				entryName = ToValidEnumName(entryName);
-				enumSb.Append("\t").Append(entryName.ToPascalCase()).Append(" = ").Append(idx == 0 ? 0UL : 1UL << (idx - 1)).AppendLine(",");
-			}
-
-			idx++;
-		}
-
-		enumSb.AppendLine("}");
-		enumSb.AppendLine();
+		enumsSb.AppendLine("[Flags]");
+		enumsSb.Append("public enum ").Append(api.CsType(name)).AppendLine(" : ulong");
+		enumsSb.AppendLine("{");
+		foreach ((string valueName, ulong value) in api.BitmaskValues(json))
+			enumsSb.Append('\t').Append(DawnApi.EnumValueName(valueName)).Append(" = 0x").Append(value.ToString("X16")).AppendLine(",");
+		enumsSb.AppendLine("}");
+		enumsSb.AppendLine();
 	}
 }
 
-static void EmitStructs(StringBuilder structsSb, StringBuilder functionsSb, JsonElement root)
+static void EmitStructs(StringBuilder structsSb, DawnApi api)
 {
-	if (!root.TryGetProperty("structs", out JsonElement structsEl))
-		return;
+	foreach ((string name, JsonElement json) in api.ByCategory("callback info"))
+		EmitStruct(structsSb, api, name, json, true);
 
-	foreach (JsonElement s in structsEl.EnumerateArray())
-	{
-		string? name = s.GetProperty("name").GetString()!;
-		string? structType = s.TryGetProperty("type", out JsonElement typeEl) ? typeEl.GetString() : null;
-
-		structsSb.AppendLine("[StructLayout(LayoutKind.Sequential)]");
-		structsSb.Append("public unsafe struct ").Append(ToKnownType(name)).AppendLine("()");
-		structsSb.AppendLine("{");
-
-		EmitChainPrefix(structsSb, structType);
-
-		if (s.TryGetProperty("members", out JsonElement membersEl))
-		{
-			foreach (JsonElement m in membersEl.EnumerateArray())
-			{
-				EmitMember(structsSb, m);
-			}
-		}
-
-		structsSb.AppendLine("}");
-		structsSb.AppendLine();
-
-		bool freeMembers = s.TryGetProperty("free_members", out JsonElement freeEl) && freeEl.GetBoolean();
-		if (freeMembers)
-		{
-			string firstArg = ToKnownType(name) + " " + name.ToCamelCase();
-			AddFunction(functionsSb, name.ToPascalCase() + "FreeMembers", firstArg);
-		}
-	}
+	foreach ((string name, JsonElement json) in api.ByCategory("structure"))
+		EmitStruct(structsSb, api, name, json, false);
 }
 
-static void EmitChainPrefix(StringBuilder structsSb, string? structType)
+static void EmitStruct(StringBuilder structsSb, DawnApi api, string name, JsonElement json, bool isCallbackInfo)
 {
-	switch (structType)
+	foreach (string root in api.ChainRoots(json))
+		structsSb.Append("// Can be chained in ").AppendLine(api.CsType(root));
+
+	structsSb.AppendLine("[StructLayout(LayoutKind.Sequential)]");
+	structsSb.Append("public unsafe struct ").Append(api.CsType(name)).AppendLine("()");
+	structsSb.AppendLine("{");
+
+	if (isCallbackInfo || DawnApi.IsExtensible(json))
+		structsSb.AppendLine("\tpublic ChainedStruct* nextInChain;");
+
+	if (DawnApi.IsChained(json))
 	{
-		case "extensible":
-		case "extensible_callback_arg":
-			structsSb.AppendLine("\t\tpublic ChainedStruct* nextInChain;");
-			break;
-		case "extension":
-			structsSb.AppendLine("\t\tpublic ChainedStruct chain;");
-			break;
+		string? sType = api.ChainedSType(name);
+		structsSb.Append("\tpublic ChainedStruct chain");
+		if (sType != null)
+			structsSb.Append(" = new() { sType = ").Append(sType).Append(" }");
+		structsSb.AppendLine(";");
 	}
+
+	foreach (JsonElement member in api.EnabledItems(json, "members"))
+	{
+		structsSb.Append("\tpublic ").Append(api.CsAnnotatedType(member)).Append(' ').Append(DawnApi.CsName(DawnApi.Name(member)));
+		string? defaultValue = api.DefaultValue(member);
+		if (defaultValue != null)
+			structsSb.Append(" = ").Append(defaultValue);
+		structsSb.AppendLine(";");
+	}
+
+	if (isCallbackInfo)
+	{
+		structsSb.AppendLine("\tpublic void* userdata1;");
+		structsSb.AppendLine("\tpublic void* userdata2;");
+	}
+
+	structsSb.AppendLine("}");
+	structsSb.AppendLine();
 }
 
-static void EmitMember(StringBuilder sb, JsonElement member)
+static void EmitObjects(StringBuilder objectsSb, DawnApi api)
 {
-	string? memberName = member.GetProperty("name").GetString()!;
-	string? type = member.GetProperty("type").GetString()!;
-	string? pointer = member.TryGetProperty("pointer", out JsonElement pEl) ? pEl.GetString() : null;
-
-	if (TryGetArrayInner(type, out string inner))
+	foreach ((string name, _) in api.ByCategory("object"))
 	{
-		string countName = SingularizeSnake(memberName) + "_count";
-		sb.Append("\t\tpublic UIntPtr ").Append(countName.ToCamelCase()).AppendLine(";");
-		sb.Append("\t\tpublic ").Append(ToKnownType(inner)).Append("* ").Append(memberName.ToCamelCase()).AppendLine(";");
-		return;
-	}
-
-	sb.Append("\t\tpublic ").Append(ToKnownType(type));
-	if (pointer != null)
-		sb.Append("*");
-	sb.Append(" ").Append(memberName.ToCamelCase());
-
-	if (TryGetMemberDefault(member, out string csExpression))
-	{
-		sb.Append(" = ").Append(csExpression);
-	}
-	sb.AppendLine(";");
-}
-
-static void EmitObjects(StringBuilder objectsSb, StringBuilder functionsSb, JsonElement root)
-{
-	if (!root.TryGetProperty("objects", out JsonElement objectsEl))
-		return;
-
-	foreach (JsonElement o in objectsEl.EnumerateArray())
-	{
-		string? name = o.GetProperty("name").GetString()!;
-		string prefix = name.ToPascalCase();
-		string firstArg = ToKnownType(name) + " " + name.ToCamelCase();
-
-		if (o.TryGetProperty("methods", out JsonElement methodsEl))
-		{
-			foreach (JsonElement method in methodsEl.EnumerateArray())
-			{
-				string? methodName = method.GetProperty("name").GetString()!;
-				string fullName = prefix + methodName.ToPascalCase();
-				ParseFunction(functionsSb, fullName, firstArg, method);
-			}
-		}
-
-		AddFunction(functionsSb, prefix + "AddRef", firstArg);
-		AddFunction(functionsSb, prefix + "Release", firstArg);
-
-		string type = ToKnownType(name);
+		string type = api.CsType(name);
 		objectsSb.Append("public record struct ").Append(type).AppendLine("(IntPtr Handle)");
 		objectsSb.AppendLine("{");
 		objectsSb.AppendLine("\tpublic readonly IntPtr Handle = Handle;");
@@ -280,244 +185,76 @@ static void EmitObjects(StringBuilder objectsSb, StringBuilder functionsSb, Json
 	}
 }
 
-static void EmitCallbacks(StringBuilder delegatesSb, StringBuilder structsSb, JsonElement root)
+static void EmitDelegates(StringBuilder delegatesSb, DawnApi api)
 {
-	if (!root.TryGetProperty("callbacks", out JsonElement callbacksEl))
-		return;
+	foreach ((string name, JsonElement json) in api.ByCategory("function pointer"))
+		EmitDelegate(delegatesSb, api, name, json, false);
 
-	foreach (JsonElement c in callbacksEl.EnumerateArray())
-	{
-		string? name = c.GetProperty("name").GetString()!;
-		string callbackName = ToKnownType(name) + "Callback";
-
-		delegatesSb.Append("public unsafe readonly struct ").AppendLine(callbackName);
-		delegatesSb.AppendLine("{");
-		delegatesSb.AppendLine("\tprivate readonly void* _handle;");
-
-		string unmanagedDelegatePtr = GetUnmanagedDelegateType(c);
-		delegatesSb.Append("\tpublic ").Append(unmanagedDelegatePtr).Append(" Handle => (").Append(unmanagedDelegatePtr).AppendLine(") _handle;");
-		delegatesSb.Append("\tpublic ").Append(callbackName).Append("(").Append(unmanagedDelegatePtr).AppendLine(" ptr) => _handle = ptr;");
-
-		delegatesSb.AppendLine("}");
-		delegatesSb.AppendLine();
-
-		string? style = c.TryGetProperty("style", out JsonElement styleEl) ? styleEl.GetString() : null;
-		EmitCallbackInfoStruct(structsSb, name, style);
-	}
+	foreach ((string name, JsonElement json) in api.ByCategory("callback function"))
+		EmitDelegate(delegatesSb, api, name, json, true);
 }
 
-static void EmitCallbackInfoStruct(StringBuilder structsSb, string callbackName, string? style)
+static void EmitDelegate(StringBuilder delegatesSb, DawnApi api, string name, JsonElement json, bool withUserdata)
 {
-	string structName = "WGPU" + callbackName.ToPascalCase() + "CallbackInfo";
-	string callbackTypeName = "WGPU" + callbackName.ToPascalCase() + "Callback";
+	StringBuilder pointerType = new StringBuilder("delegate* unmanaged[Cdecl]<");
+	foreach (JsonElement arg in api.EnabledItems(json, "args"))
+		pointerType.Append(api.CsAnnotatedType(arg)).Append(", ");
+	if (withUserdata)
+		pointerType.Append("void*, void*, ");
+	pointerType.Append(api.CsReturnType(json)).Append('>');
 
-	structsSb.AppendLine("\t[StructLayout(LayoutKind.Sequential)]");
-	structsSb.Append("\tpublic unsafe struct ").AppendLine(structName);
-	structsSb.AppendLine("\t{");
-	structsSb.AppendLine("\t\tpublic ChainedStruct* nextInChain;");
-	if (style == "callback_mode")
-		structsSb.AppendLine("\t\tpublic WGPUCallbackMode mode;");
-	structsSb.Append("\t\tpublic ").Append(callbackTypeName).AppendLine(" callback;");
-	structsSb.AppendLine("\t\tpublic void* userdata1;");
-	structsSb.AppendLine("\t\tpublic void* userdata2;");
-	structsSb.AppendLine("\t}");
+	string type = api.CsType(name);
+	delegatesSb.Append("public unsafe readonly struct ").AppendLine(type);
+	delegatesSb.AppendLine("{");
+	delegatesSb.AppendLine("\tprivate readonly void* _handle;");
+	delegatesSb.Append("\tpublic ").Append(pointerType).Append(" Handle => (").Append(pointerType).AppendLine(") _handle;");
+	delegatesSb.Append("\tpublic ").Append(type).Append('(').Append(pointerType).AppendLine(" ptr) => _handle = ptr;");
+	delegatesSb.AppendLine("}");
+	delegatesSb.AppendLine();
 }
 
-static void EmitFunctions(StringBuilder functionsSb, JsonElement root)
+static void EmitFunctions(StringBuilder functionsSb, DawnApi api)
 {
-	if (!root.TryGetProperty("functions", out JsonElement functionsEl))
-		return;
+	foreach ((string name, JsonElement json) in api.ByCategory("function").OrderBy(f => f.Name == "get proc address"))
+		EmitFunction(functionsSb, api, DawnApi.CName(name), null, json);
 
-	foreach (JsonElement f in functionsEl.EnumerateArray())
+	// Same order and extra methods as c_methods_sorted_by_parent in dawn_json_generator.py.
+	var parents = api.ByCategory("object").Concat(api.ByCategory("structure"))
+		.OrderBy(t => DawnApi.SortKey(t.Name), StringComparer.Ordinal);
+
+	foreach ((string name, JsonElement json) in parents)
 	{
-		string name = f.GetProperty("name").GetString()!;
-		ParseFunction(functionsSb, name.ToPascalCase(), null, f);
-	}
-}
+		string self = api.CsType(name) + " " + DawnApi.CsName(name);
+		string prefix = DawnApi.CName(name);
 
-static string GetUnmanagedDelegateType(JsonElement jsonElement)
-{
-	StringBuilder sb = new StringBuilder();
-	sb.Append("delegate* unmanaged[Cdecl]<");
-
-	if (jsonElement.TryGetProperty("args", out JsonElement argsEl))
-	{
-		foreach (JsonElement arg in argsEl.EnumerateArray())
+		if (DawnApi.Category(json) == "object")
 		{
-			AppendArgType(sb, arg);
-			sb.Append(", ");
+			foreach (JsonElement method in api.Methods(json))
+				EmitFunction(functionsSb, api, prefix + DawnApi.CName(DawnApi.Name(method)), self, method);
+			EmitFunction(functionsSb, api, prefix + "AddRef", self, null);
+			EmitFunction(functionsSb, api, prefix + "Release", self, null);
+		}
+		else if (api.HasFreeMembersFunction(json))
+		{
+			EmitFunction(functionsSb, api, prefix + "FreeMembers", self, null);
 		}
 	}
-
-	sb.Append("void*, void*, ");
-
-	sb.Append(GetReturns(jsonElement));
-	sb.Append(">");
-	return sb.ToString();
 }
 
-static void AppendArgType(StringBuilder sb, JsonElement arg)
+static void EmitFunction(StringBuilder functionsSb, DawnApi api, string cName, string? self, JsonElement? json)
 {
-	string? type = arg.GetProperty("type").GetString()!;
-	string? pointer = arg.TryGetProperty("pointer", out JsonElement pEl) ? pEl.GetString() : null;
+	functionsSb.Append("\t[LibraryImport(WebGPULib, EntryPoint = \"wgpu").Append(cName).AppendLine("\")]");
+	functionsSb.Append("\tpublic static partial ").Append(json is { } returnsJson ? api.CsReturnType(returnsJson) : "void");
+	functionsSb.Append(" wgpu").Append(cName).Append('(');
 
-	if (TryGetArrayInner(type, out string inner))
+	List<string> args = [];
+	if (self != null)
+		args.Add(self);
+	if (json is { } argsJson)
 	{
-		sb.Append("UIntPtr, ");
-		sb.Append(ToKnownType(inner)).Append("*");
-		return;
+		foreach (JsonElement arg in api.EnabledItems(argsJson, "args"))
+			args.Add(api.CsAnnotatedType(arg) + " " + DawnApi.CsName(DawnApi.Name(arg)));
 	}
 
-	sb.Append(ToKnownType(type));
-	if (pointer != null)
-		sb.Append("*");
-}
-
-static string GetReturns(JsonElement jsonElement)
-{
-	if (!jsonElement.TryGetProperty("returns", out JsonElement returnsEl))
-	{
-		// Methods/functions with a top-level `callback` key implicitly return WGPUFuture.
-		if (jsonElement.TryGetProperty("callback", out _))
-			return "WGPUFuture";
-		return "void";
-	}
-
-	if (returnsEl.ValueKind == JsonValueKind.String)
-		return ToKnownType(returnsEl.GetString()!);
-
-	string type = returnsEl.GetProperty("type").GetString()!;
-	string mapped = ToKnownType(type);
-	if (returnsEl.TryGetProperty("pointer", out JsonElement pEl) && pEl.GetString() != null)
-		mapped += "*";
-	return mapped;
-}
-
-static void AddFunction(StringBuilder functionsSb, string functionName, string? firstArg)
-{
-	// functionsSb.Append("\t[DllImport(\"wgpu_native\", CallingConvention = CallingConvention.Cdecl, EntryPoint = \"").Append("wgpu").Append(functionName).AppendLine("\")]");
-	// functionsSb.Append("\tpublic static extern void wgpu").Append(functionName).Append("(").Append(firstArg).AppendLine(");");
-	functionsSb.Append("\t[LibraryImport(WebGPULib, EntryPoint = \"").Append("wgpu").Append(functionName).AppendLine("\")]");
-	functionsSb.Append("\tpublic static partial void wgpu").Append(functionName).Append("(").Append(firstArg).AppendLine(");");
-}
-
-static void ParseFunction(StringBuilder functionsSb, string functionName, string? firstArg, JsonElement jsonElement)
-{
-	// functionsSb.Append("\t[DllImport(\"wgpu_native\", CallingConvention = CallingConvention.Cdecl, EntryPoint = \"").Append("wgpu").Append(functionName).AppendLine("\")]");
-	// functionsSb.Append("\tpublic static extern ");
-	functionsSb.Append("\t[LibraryImport(WebGPULib, EntryPoint = \"").Append("wgpu").Append(functionName).AppendLine("\")]");
-	functionsSb.Append("\tpublic static partial ");
-
-	functionsSb.Append(GetReturns(jsonElement));
-
-	functionsSb.Append(" wgpu").Append(functionName).Append("(");
-
-	bool first = true;
-
-	if (firstArg != null)
-	{
-		functionsSb.Append(firstArg);
-		first = false;
-	}
-
-	if (jsonElement.TryGetProperty("args", out JsonElement argsEl))
-	{
-		foreach (JsonElement arg in argsEl.EnumerateArray())
-		{
-			string? argName = arg.GetProperty("name").GetString()!;
-			string? type = arg.GetProperty("type").GetString()!;
-
-			if (!first)
-				functionsSb.Append(", ");
-			
-			if (TryGetArrayInner(type, out string inner))
-			{
-				string countName = SingularizeSnake(argName) + "_count";
-				functionsSb.Append("UIntPtr ").Append(countName.ToCamelCase());
-				functionsSb.Append(", ");
-				functionsSb.Append(ToKnownType(inner)).Append("* ").Append(argName.ToCamelCase());
-			}
-			else
-			{
-				functionsSb.Append(ToKnownType(type));
-				string? pointer = arg.TryGetProperty("pointer", out JsonElement pEl) ? pEl.GetString() : null;
-				if (pointer != null)
-					functionsSb.Append("*");
-				functionsSb.Append(" ").Append(argName.ToCamelCase());
-			}
-			first = false;
-		}
-	}
-
-	if (jsonElement.TryGetProperty("callback", out JsonElement callbackEl))
-	{
-		if (!first)
-			functionsSb.Append(", ");
-		functionsSb.Append(ToKnownType(callbackEl.GetString()!)).Append(" callbackInfo");
-	}
-
-	functionsSb.AppendLine(");");
-}
-
-static bool TryGetMemberDefault(JsonElement member, out string csExpression)
-{
-	csExpression = "";
-	if (!member.TryGetProperty("default", out JsonElement defEl))
-		return false;
-
-	string type = member.GetProperty("type").GetString()!;
-
-	switch (defEl.ValueKind)
-	{
-		case JsonValueKind.Null:
-			return false;
-
-		case JsonValueKind.False:
-			csExpression = "false";
-			return true;
-
-		case JsonValueKind.True:
-			csExpression = "true";
-			return true;
-
-		case JsonValueKind.Number:
-		{
-			string raw = defEl.GetRawText();
-			csExpression = raw; // TODO: process float?
-			return true;
-		}
-
-		case JsonValueKind.String:
-		{
-			string value = defEl.GetString()!;
-
-			if (value == "zero")
-				return false;
-
-			if (value.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
-			{
-				csExpression = value;
-				return true;
-			}
-
-			const string constantPrefix = "constant.";
-			if (value.StartsWith(constantPrefix, StringComparison.InvariantCulture))
-			{
-				csExpression = "WebGPUNative." + value[constantPrefix.Length..].ToPascalCase();
-				return true;
-			}
-
-			if (type.StartsWith("enum.", StringComparison.InvariantCulture)
-			    || type.StartsWith("bitflag.", StringComparison.InvariantCulture))
-			{
-				csExpression = ToKnownType(type) + "." + ToValidEnumName(value).ToPascalCase();
-				return true;
-			}
-
-			throw new NotSupportedException($"Unknown default value '{value}' for type '{type}'.");
-		}
-
-		default:
-			throw new NotSupportedException($"Unsupported default JSON kind '{defEl.ValueKind}' for type '{type}'.");
-	}
+	functionsSb.AppendJoin(", ", args).AppendLine(");");
 }

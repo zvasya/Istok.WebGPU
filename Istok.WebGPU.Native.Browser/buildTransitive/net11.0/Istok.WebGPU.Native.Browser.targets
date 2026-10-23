@@ -6,7 +6,6 @@
             --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu_generated_sig_info.js
             --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu_generated_struct_info.js
             --js-library $(MSBuildThisFileDirectory)../../wwwroot/js/library_webgpu.js
-            --export=stackSave --export=stackRestore
         </EmccExtraLDFlags>
         <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
