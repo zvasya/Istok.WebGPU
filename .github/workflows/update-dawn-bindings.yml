@@ -26,7 +26,7 @@ jobs:
       - name: Install WebAssembly tools
         run: dotnet workload install wasm-tools --skip-manifest-update
 
-      - name: Read Dawn revision from the .NET Emscripten workload
+      - name: Read Dawn version from the .NET Emscripten workload
         id: dawn
         shell: bash
         run: |
@@ -51,27 +51,22 @@ jobs:
               -type f -print -quit
           )"
 
-          dawn_revision="$(
-            grep '^URL = ' "$port_file" \
-              | grep -oE '[0-9a-f]{40}'
-          )"
           emdawn_version="$(sed -nE "s/^_VERSION = '([^']+)'/\1/p" "$port_file")"
 
-          if [[ ! "$dawn_revision" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Unable to find the Dawn revision in $port_file" >&2
+          if [[ ! "$emdawn_version" =~ ^v[0-9]{8}\.[0-9]{6}$ ]]; then
+            echo "Unable to find the Emdawnwebgpu version in $port_file" >&2
             exit 1
           fi
 
-          printf '%s\n' "$dawn_revision" > dawn-revision.txt
-          echo "revision=$dawn_revision" >> "$GITHUB_OUTPUT"
-          echo "emdawn-version=$emdawn_version" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$emdawn_version" > dawn-version.txt
+          echo "version=$emdawn_version" >> "$GITHUB_OUTPUT"
 
       - name: Download dawn.json
         shell: bash
         env:
-          DAWN_REVISION: ${{ steps.dawn.outputs.revision }}
+          DAWN_VERSION: ${{ steps.dawn.outputs.version }}
         run: |
-          dawn_url="https://raw.githubusercontent.com/google/dawn/${DAWN_REVISION}/src/dawn/dawn.json"
+          dawn_url="https://raw.githubusercontent.com/google/dawn/${DAWN_VERSION}/src/dawn/dawn.json"
           curl --fail --silent --show-error --location "$dawn_url" \
             --output Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
 
@@ -83,16 +78,15 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
         with:
-          commit-message: Update Dawn bindings to ${{ steps.dawn.outputs.revision }}
+          commit-message: Update Dawn bindings to ${{ steps.dawn.outputs.version }}
           branch: automation/update-dawn-bindings
           delete-branch: true
-          title: Update Dawn bindings to ${{ steps.dawn.outputs.revision }}
+          title: Update Dawn bindings to ${{ steps.dawn.outputs.version }}
           body: |
             Generated WebGPU bindings for:
 
-            - Emdawnwebgpu: `${{ steps.dawn.outputs.emdawn-version }}`
-            - Dawn revision: `${{ steps.dawn.outputs.revision }}`
+            - Emdawnwebgpu: `${{ steps.dawn.outputs.version }}`
           add-paths: |
-            dawn-revision.txt
+            dawn-version.txt
             Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
             Istok.WebGPU.LowLevel/Generated/
