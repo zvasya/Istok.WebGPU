@@ -121,6 +121,8 @@ public static unsafe partial class WebGPUNative
 	public static partial void wgpuComputePassEncoderPushDebugGroup(WGPUComputePassEncoder computePassEncoder, WGPUStringView groupLabel);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuComputePassEncoderSetBindGroup")]
 	public static partial void wgpuComputePassEncoderSetBindGroup(WGPUComputePassEncoder computePassEncoder, uint groupIndex, WGPUBindGroup group, UIntPtr dynamicOffsetCount, uint* dynamicOffsets);
+	[LibraryImport(WebGPULib, EntryPoint = "wgpuComputePassEncoderSetImmediates")]
+	public static partial void wgpuComputePassEncoderSetImmediates(WGPUComputePassEncoder computePassEncoder, uint offset, void* data, UIntPtr size);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuComputePassEncoderSetLabel")]
 	public static partial void wgpuComputePassEncoderSetLabel(WGPUComputePassEncoder computePassEncoder, WGPUStringView label);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuComputePassEncoderSetPipeline")]
@@ -267,6 +269,8 @@ public static unsafe partial class WebGPUNative
 	public static partial void wgpuRenderBundleEncoderPushDebugGroup(WGPURenderBundleEncoder renderBundleEncoder, WGPUStringView groupLabel);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderBundleEncoderSetBindGroup")]
 	public static partial void wgpuRenderBundleEncoderSetBindGroup(WGPURenderBundleEncoder renderBundleEncoder, uint groupIndex, WGPUBindGroup group, UIntPtr dynamicOffsetCount, uint* dynamicOffsets);
+	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderBundleEncoderSetImmediates")]
+	public static partial void wgpuRenderBundleEncoderSetImmediates(WGPURenderBundleEncoder renderBundleEncoder, uint offset, void* data, UIntPtr size);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderBundleEncoderSetIndexBuffer")]
 	public static partial void wgpuRenderBundleEncoderSetIndexBuffer(WGPURenderBundleEncoder renderBundleEncoder, WGPUBuffer buffer, WGPUIndexFormat format, ulong offset, ulong size);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderBundleEncoderSetLabel")]
@@ -305,6 +309,8 @@ public static unsafe partial class WebGPUNative
 	public static partial void wgpuRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint groupIndex, WGPUBindGroup group, UIntPtr dynamicOffsetCount, uint* dynamicOffsets);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderPassEncoderSetBlendConstant")]
 	public static partial void wgpuRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor* color);
+	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderPassEncoderSetImmediates")]
+	public static partial void wgpuRenderPassEncoderSetImmediates(WGPURenderPassEncoder renderPassEncoder, uint offset, void* data, UIntPtr size);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderPassEncoderSetIndexBuffer")]
 	public static partial void wgpuRenderPassEncoderSetIndexBuffer(WGPURenderPassEncoder renderPassEncoder, WGPUBuffer buffer, WGPUIndexFormat format, ulong offset, ulong size);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuRenderPassEncoderSetLabel")]

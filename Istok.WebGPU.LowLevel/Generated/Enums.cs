@@ -203,6 +203,8 @@ public enum WGPUFeatureName
 	TextureFormatsTier2 = 0x00000014,
 	PrimitiveIndex = 0x00000015,
 	TextureComponentSwizzle = 0x00000016,
+	SubgroupSizeControl = 0x00000017,
+	TextureCompressionUnaligned = 0x00000018,
 }
 
 public enum WGPUFilterMode
@@ -596,6 +598,7 @@ public enum WGPUVertexFormat
 	Sint32X4 = 0x00000027,
 	Unorm1010102 = 0x00000028,
 	Unorm8X4BGRA = 0x00000029,
+	Snorm1010102 = 0x0000002A,
 }
 
 public enum WGPUVertexStepMode
@@ -624,6 +627,10 @@ public enum WGPUWGSLLanguageFeatureName
 	SubgroupUniformity = 0x00000008,
 	TextureFormatsTier1 = 0x00000009,
 	LinearIndexing = 0x0000000A,
+	ImmediateAddressSpace = 0x0000000B,
+	BufferView = 0x0000000C,
+	SwizzleAssignment = 0x0000000D,
+	FragmentDepth = 0x0000000E,
 }
 
 [Flags]
