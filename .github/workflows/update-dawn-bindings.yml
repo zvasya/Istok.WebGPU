@@ -1,0 +1,89 @@
+name: Update Dawn bindings
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - skia-tag.txt
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Read Skia tag
+        id: skia
+        shell: bash
+        run: |
+          tag="$(tr -d '[:space:]' < skia-tag.txt)"
+          if [[ -z "$tag" ]]; then
+            echo "skia-tag.txt is empty" >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Read Dawn revision from Skia dependencies
+        id: dawn
+        shell: bash
+        env:
+          SKIA_TAG: ${{ steps.skia.outputs.tag }}
+        run: |
+          deps_url="https://raw.githubusercontent.com/zvasya/skia/${SKIA_TAG}/infra/bots/deps/deps_gen.go"
+          curl --fail --silent --show-error --location "$deps_url" --output deps_gen.go
+
+          dawn_revision="$(
+            grep -A 4 '"dawn.googlesource.com/dawn"' deps_gen.go \
+              | sed -nE 's/.*Version: "([0-9a-f]{40})".*/\1/p' \
+              | head -n 1
+          )"
+
+          if [[ ! "$dawn_revision" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Unable to find the Dawn revision in deps_gen.go" >&2
+            exit 1
+          fi
+
+          printf '%s\n' "$dawn_revision" > dawn-revision.txt
+          echo "revision=$dawn_revision" >> "$GITHUB_OUTPUT"
+
+      - name: Download dawn.json
+        shell: bash
+        env:
+          DAWN_REVISION: ${{ steps.dawn.outputs.revision }}
+        run: |
+          dawn_url="https://raw.githubusercontent.com/google/dawn/${DAWN_REVISION}/src/dawn/dawn.json"
+          curl --fail --silent --show-error --location "$dawn_url" \
+            --output Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
+
+          jq empty Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
+
+      - name: Generate code
+        run: dotnet run --project Istok.WebGPU.LowLevel.Generator/Istok.WebGPU.LowLevel.Generator.csproj
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: Update Dawn bindings to ${{ steps.dawn.outputs.revision }}
+          branch: automation/update-dawn-bindings
+          delete-branch: true
+          title: Update Dawn bindings to ${{ steps.dawn.outputs.revision }}
+          body: |
+            Generated WebGPU bindings for:
+
+            - Skia tag: `${{ steps.skia.outputs.tag }}`
+            - Dawn revision: `${{ steps.dawn.outputs.revision }}`
+          add-paths: |
+            dawn-revision.txt
+            Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
+            Istok.WebGPU.LowLevel/Generated/
