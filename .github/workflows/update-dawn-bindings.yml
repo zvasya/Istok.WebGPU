@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - skia-tag.txt
+      - global.json
 
 permissions:
   contents: write
@@ -21,42 +21,50 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.x
-          dotnet-quality: preview
+          global-json-file: global.json
 
-      - name: Read Skia tag
-        id: skia
-        shell: bash
-        run: |
-          tag="$(tr -d '[:space:]' < skia-tag.txt)"
-          if [[ -z "$tag" ]]; then
-            echo "skia-tag.txt is empty" >&2
-            exit 1
-          fi
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Install WebAssembly tools
+        run: dotnet workload install wasm-tools --skip-manifest-update
 
-      - name: Read Dawn revision from Skia dependencies
+      - name: Read Dawn revision from the .NET Emscripten workload
         id: dawn
         shell: bash
-        env:
-          SKIA_TAG: ${{ steps.skia.outputs.tag }}
         run: |
-          deps_url="https://raw.githubusercontent.com/zvasya/skia/${SKIA_TAG}/infra/bots/deps/deps_gen.go"
-          curl --fail --silent --show-error --location "$deps_url" --output deps_gen.go
+          sdk_version="$(dotnet --version)"
+          sdk_dir="$(dotnet --list-sdks | awk -v version="$sdk_version" '$1 == version { gsub(/[\[\]]/, "", $2); print $2; exit }')"
+          dotnet_root="$(dirname "$sdk_dir")"
+          feature_band="$(sed -E 's/(-(preview|rc)\.[0-9]+)\..*/\1/' <<< "$sdk_version")"
 
-          dawn_revision="$(
-            grep -A 4 '"dawn.googlesource.com/dawn"' deps_gen.go \
-              | sed -nE 's/.*Version: "([0-9a-f]{40})".*/\1/p' \
-              | head -n 1
+          manifest="$(
+            find "$dotnet_root/sdk-manifests/$feature_band/microsoft.net.workload.emscripten.current" \
+              -name WorkloadManifest.json -type f \
+              | sort -V \
+              | tail -n 1
+          )"
+          pack_version="$(
+            jq -r '.packs | to_entries[] | select(.key | test("^Microsoft.NET.Runtime.Emscripten.Sdk.net")) | .value.version' \
+              "$manifest"
+          )"
+          port_file="$(
+            find "$dotnet_root/packs" \
+              -path "*/$pack_version/tools/emscripten/tools/ports/emdawnwebgpu.py" \
+              -type f -print -quit
           )"
 
+          dawn_revision="$(
+            grep '^URL = ' "$port_file" \
+              | grep -oE '[0-9a-f]{40}'
+          )"
+          emdawn_version="$(sed -nE "s/^_VERSION = '([^']+)'/\1/p" "$port_file")"
+
           if [[ ! "$dawn_revision" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Unable to find the Dawn revision in deps_gen.go" >&2
+            echo "Unable to find the Dawn revision in $port_file" >&2
             exit 1
           fi
 
           printf '%s\n' "$dawn_revision" > dawn-revision.txt
           echo "revision=$dawn_revision" >> "$GITHUB_OUTPUT"
+          echo "emdawn-version=$emdawn_version" >> "$GITHUB_OUTPUT"
 
       - name: Download dawn.json
         shell: bash
@@ -82,7 +90,7 @@ jobs:
           body: |
             Generated WebGPU bindings for:
 
-            - Skia tag: `${{ steps.skia.outputs.tag }}`
+            - Emdawnwebgpu: `${{ steps.dawn.outputs.emdawn-version }}`
             - Dawn revision: `${{ steps.dawn.outputs.revision }}`
           add-paths: |
             dawn-revision.txt
