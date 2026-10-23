@@ -482,3 +482,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Native Dawn sources, build trees and outputs
+/.native-build/
+/artifacts/dawn/
