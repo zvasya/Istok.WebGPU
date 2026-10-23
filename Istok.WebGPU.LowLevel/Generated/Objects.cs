@@ -65,13 +65,6 @@ public record struct WGPUDevice(IntPtr Handle)
 	public static implicit operator WGPUDevice(IntPtr handle) => new WGPUDevice(handle);
 }
 
-public record struct WGPUExternalTexture(IntPtr Handle)
-{
-	public readonly IntPtr Handle = Handle;
-	public static WGPUExternalTexture Null => new WGPUExternalTexture(IntPtr.Zero);
-	public static implicit operator WGPUExternalTexture(IntPtr handle) => new WGPUExternalTexture(handle);
-}
-
 public record struct WGPUInstance(IntPtr Handle)
 {
 	public readonly IntPtr Handle = Handle;

@@ -112,17 +112,6 @@ public enum WGPUCompilationMessageType
 	Info = 0x00000003,
 }
 
-public enum WGPUComponentSwizzle
-{
-	Undefined = 0x00000000,
-	Zero = 0x00000001,
-	One = 0x00000002,
-	R = 0x00000003,
-	G = 0x00000004,
-	B = 0x00000005,
-	A = 0x00000006,
-}
-
 public enum WGPUCompositeAlphaMode
 {
 	Auto = 0x00000000,
@@ -202,7 +191,6 @@ public enum WGPUFeatureName
 	TextureFormatsTier1 = 0x00000013,
 	TextureFormatsTier2 = 0x00000014,
 	PrimitiveIndex = 0x00000015,
-	TextureComponentSwizzle = 0x00000016,
 }
 
 public enum WGPUFilterMode
@@ -386,11 +374,6 @@ public enum WGPUSType
 	SurfaceSourceXCBWindow = 0x00000009,
 	SurfaceColorManagement = 0x0000000A,
 	RequestAdapterWebXROptions = 0x0000000B,
-	TextureComponentSwizzleDescriptor = 0x0000000C,
-	ExternalTextureBindingLayout = 0x0000000D,
-	ExternalTextureBindingEntry = 0x0000000E,
-	CompatibilityModeLimits = 0x0000000F,
-	TextureBindingViewDimension = 0x00000010,
 }
 
 public enum WGPUSurfaceGetCurrentTextureStatus
@@ -618,12 +601,6 @@ public enum WGPUWGSLLanguageFeatureName
 	Packed4X8IntegerDotProduct = 0x00000002,
 	UnrestrictedPointerParameters = 0x00000003,
 	PointerCompositeAccess = 0x00000004,
-	UniformBufferStandardLayout = 0x00000005,
-	SubgroupId = 0x00000006,
-	TextureAndSamplerLet = 0x00000007,
-	SubgroupUniformity = 0x00000008,
-	TextureFormatsTier1 = 0x00000009,
-	LinearIndexing = 0x0000000A,
 }
 
 [Flags]
@@ -679,6 +656,5 @@ public enum WGPUTextureUsage : ulong
 	TextureBinding = 0x0000000000000004,
 	StorageBinding = 0x0000000000000008,
 	RenderAttachment = 0x0000000000000010,
-	TransientAttachment = 0x0000000000000020,
 }
 

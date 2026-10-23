@@ -189,12 +189,6 @@ public static unsafe partial class WebGPUNative
 	public static partial void wgpuDeviceAddRef(WGPUDevice device);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuDeviceRelease")]
 	public static partial void wgpuDeviceRelease(WGPUDevice device);
-	[LibraryImport(WebGPULib, EntryPoint = "wgpuExternalTextureSetLabel")]
-	public static partial void wgpuExternalTextureSetLabel(WGPUExternalTexture externalTexture, WGPUStringView label);
-	[LibraryImport(WebGPULib, EntryPoint = "wgpuExternalTextureAddRef")]
-	public static partial void wgpuExternalTextureAddRef(WGPUExternalTexture externalTexture);
-	[LibraryImport(WebGPULib, EntryPoint = "wgpuExternalTextureRelease")]
-	public static partial void wgpuExternalTextureRelease(WGPUExternalTexture externalTexture);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuInstanceCreateSurface")]
 	public static partial WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor* descriptor);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuInstanceGetWGSLLanguageFeatures")]
@@ -385,8 +379,6 @@ public static unsafe partial class WebGPUNative
 	public static partial uint wgpuTextureGetMipLevelCount(WGPUTexture texture);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuTextureGetSampleCount")]
 	public static partial uint wgpuTextureGetSampleCount(WGPUTexture texture);
-	[LibraryImport(WebGPULib, EntryPoint = "wgpuTextureGetTextureBindingViewDimension")]
-	public static partial WGPUTextureViewDimension wgpuTextureGetTextureBindingViewDimension(WGPUTexture texture);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuTextureGetUsage")]
 	public static partial WGPUTextureUsage wgpuTextureGetUsage(WGPUTexture texture);
 	[LibraryImport(WebGPULib, EntryPoint = "wgpuTextureGetWidth")]

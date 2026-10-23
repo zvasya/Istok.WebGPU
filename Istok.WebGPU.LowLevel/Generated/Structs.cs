@@ -228,17 +228,6 @@ public unsafe struct WGPUCommandEncoderDescriptor()
 	public WGPUStringView label = new();
 }
 
-// Can be chained in WGPULimits
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUCompatibilityModeLimits()
-{
-	public ChainedStruct chain = new() { sType = WGPUSType.CompatibilityModeLimits };
-	public uint maxStorageBuffersInVertexStage = WebGPUNative.LimitU32Undefined;
-	public uint maxStorageTexturesInVertexStage = WebGPUNative.LimitU32Undefined;
-	public uint maxStorageBuffersInFragmentStage = WebGPUNative.LimitU32Undefined;
-	public uint maxStorageTexturesInFragmentStage = WebGPUNative.LimitU32Undefined;
-}
-
 [StructLayout(LayoutKind.Sequential)]
 public unsafe struct WGPUCompilationInfo()
 {
@@ -329,21 +318,6 @@ public unsafe struct WGPUExtent3D()
 	public uint width;
 	public uint height = 1;
 	public uint depthOrArrayLayers = 1;
-}
-
-// Can be chained in WGPUBindGroupEntry
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUExternalTextureBindingEntry()
-{
-	public ChainedStruct chain = new() { sType = WGPUSType.ExternalTextureBindingEntry };
-	public WGPUExternalTexture externalTexture;
-}
-
-// Can be chained in WGPUBindGroupLayoutEntry
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUExternalTextureBindingLayout()
-{
-	public ChainedStruct chain = new() { sType = WGPUSType.ExternalTextureBindingLayout };
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -816,31 +790,6 @@ public unsafe struct WGPUTextureBindingLayout()
 	public WGPUTextureSampleType sampleType = WGPUTextureSampleType.Undefined;
 	public WGPUTextureViewDimension viewDimension;
 	public Bool32 multisampled;
-}
-
-// Can be chained in WGPUTextureDescriptor
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUTextureBindingViewDimension()
-{
-	public ChainedStruct chain = new() { sType = WGPUSType.TextureBindingViewDimension };
-	public WGPUTextureViewDimension textureBindingViewDimension;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUTextureComponentSwizzle()
-{
-	public WGPUComponentSwizzle r;
-	public WGPUComponentSwizzle g;
-	public WGPUComponentSwizzle b;
-	public WGPUComponentSwizzle a;
-}
-
-// Can be chained in WGPUTextureViewDescriptor
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WGPUTextureComponentSwizzleDescriptor()
-{
-	public ChainedStruct chain = new() { sType = WGPUSType.TextureComponentSwizzleDescriptor };
-	public WGPUTextureComponentSwizzle swizzle;
 }
 
 [StructLayout(LayoutKind.Sequential)]
