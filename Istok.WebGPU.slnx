@@ -10,9 +10,10 @@
   </Folder>
   <Folder Name="/Native/">
     <Project Path="Istok.WebGPU.Native.Android\Istok.WebGPU.Native.Android.csproj" />
-    <Project Path="Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />
     <Project Path="Istok.WebGPU.Native.iOS\Istok.WebGPU.Native.iOS.csproj" />
-    <Project Path="Istok.WebGPU.Native\Istok.WebGPU.Native.csproj" />
+    <Project Path="Istok.WebGPU.Native.Linux\Istok.WebGPU.Native.Linux.csproj" />
+    <Project Path="Istok.WebGPU.Native.macOS\Istok.WebGPU.Native.macOS.csproj" />
+    <Project Path="Istok.WebGPU.Native.Win32\Istok.WebGPU.Native.Win32.csproj" />
   </Folder>
   <Project Path="AssetManager/AssetManager.csproj" />
   <Project Path="Istok.Mathematics/Istok.Mathematics.csproj" />

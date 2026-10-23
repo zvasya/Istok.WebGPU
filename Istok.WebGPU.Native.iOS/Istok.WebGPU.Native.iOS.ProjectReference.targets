@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Import this only when referencing Istok.WebGPU.Native.iOS as a ProjectReference.
+  The NuGet package needs no targets: the iOS SDK picks up runtimes/<rid>/native/*.framework itself.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="_IstokWebGPUNativeiOSFrameworks" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <_IstokWebGPUNativeiOSRid Condition="$(RuntimeIdentifier.StartsWith('iossimulator'))">iossimulator</_IstokWebGPUNativeiOSRid>
+            <_IstokWebGPUNativeiOSRid Condition="'$(_IstokWebGPUNativeiOSRid)' == '' And $(RuntimeIdentifier.StartsWith('ios'))">ios</_IstokWebGPUNativeiOSRid>
+        </PropertyGroup>
+
+        <ItemGroup Condition="'$(_IstokWebGPUNativeiOSRid)' != ''">
+            <NativeReference Include="$(MSBuildThisFileDirectory)runtimes/$(_IstokWebGPUNativeiOSRid)/native/webgpu_dawn.framework">
+                <Kind>Framework</Kind>
+                <SmartLink>False</SmartLink>
+            </NativeReference>
+        </ItemGroup>
+    </Target>
+</Project>

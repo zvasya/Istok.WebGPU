@@ -58,7 +58,7 @@ public class MainActivity : SilkActivity
 		
 		IWebGpuView webGpuView = new WebGpuSdlView(window);
 		
-		_Example = new ExampleComputeBoids(_Device, webGpuView, _SurfaceCapabilities, _Surface,  new ResourcesProvider());
+		_Example = new ExampleCubeMap(_Device, webGpuView, _SurfaceCapabilities, _Surface,  new ResourcesProvider());
 		_Example.OnLoad().Wait();
 		webGpuView.Render += _Example.WindowOnRender;
 		webGpuView.FramebufferResize += _Example.FramebufferResize;

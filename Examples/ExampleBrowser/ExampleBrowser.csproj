@@ -6,7 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <WasmBuildNative>true</WasmBuildNative>
         <WasmCachePath>$(MSBuildProjectDirectory)/obj/emscripten-cache</WasmCachePath>
-<!--        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>-->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
         <RootNamespace>ExampleBrowser</RootNamespace>
@@ -29,12 +28,11 @@
         <ProjectReference Include="..\..\Istok.WebGPU.View.Browser\Istok.WebGPU.View.Browser.csproj" />
         <ProjectReference Include="..\Examples\Examples.csproj" />
         <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
-<!--        <ProjectReference Include="..\..\Istok.WebGPU.Native.Browser\Istok.WebGPU.Native.Browser.csproj" />-->
     </ItemGroup>
 
     <Target Name="RegisterWgpuNativePInvokeModule" BeforeTargets="_GenerateManagedToNative">
         <ItemGroup>
-            <_WasmPInvokeModules Include="wgpu_native" />
+            <_WasmPInvokeModules Include="webgpu_dawn" />
         </ItemGroup>
     </Target>
 

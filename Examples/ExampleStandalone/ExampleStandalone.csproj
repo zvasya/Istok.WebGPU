@@ -22,7 +22,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Istok.WebGPU.Native\Istok.WebGPU.Native.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU.Native.macOS\Istok.WebGPU.Native.macOS.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU.Native.Linux\Istok.WebGPU.Native.Linux.csproj" />
+        <ProjectReference Include="..\..\Istok.WebGPU.Native.Win32\Istok.WebGPU.Native.Win32.csproj" />
         <ProjectReference Include="..\..\Istok.WebGPU.View.SDL\Istok.WebGPU.View.SDL.csproj" />
         <ProjectReference Include="..\..\Istok.WebGPU.View\Istok.WebGPU.View.csproj" />
         <ProjectReference Include="..\Examples\Examples.csproj"/>

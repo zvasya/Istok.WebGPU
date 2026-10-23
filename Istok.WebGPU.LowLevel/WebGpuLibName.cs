@@ -4,8 +4,8 @@ public static unsafe partial class WebGPUNative
 {
 	const string WebGPULib = 
 #if __IOS__
-		"__Internal";
+		"@rpath/webgpu_dawn.framework/webgpu_dawn";
 #else
-		"wgpu_native";
+		"webgpu_dawn";
 #endif
 }

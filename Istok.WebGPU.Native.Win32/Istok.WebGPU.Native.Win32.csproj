@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Istok.WebGPU.Native.Win32</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native.Win32</PackageId>
+        <Description>Native WebGPU runtime (Google Dawn) for Windows (x64, x86, arm64): webgpu_dawn.dll, packaged for use with Istok.WebGPU.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="runtimes\**\*" Exclude="**\.DS_Store;**\.gitkeep" Pack="true" PackagePath="runtimes" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>

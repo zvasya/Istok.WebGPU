@@ -7,13 +7,12 @@
         <RootNamespace>Istok.WebGPU.Native.iOS</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Istok.WebGPU.Native.iOS</PackageId>
-        <Description>Native WebGPU runtime binaries (wgpu-native) for iOS and the iOS simulator, packaged for use with Istok.WebGPU.</Description>
+        <Description>Native WebGPU runtime (Google Dawn, webgpu_dawn.framework) for iOS and the iOS simulator, packaged for use with Istok.WebGPU.</Description>
     </PropertyGroup>
 
 
     <ItemGroup>
-        <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes\" />
-        <None Include="buildTransitive\net11.0-ios\Istok.WebGPU.Native.iOS.targets" Pack="true" PackagePath="buildTransitive\$(TargetFramework)$(TargetPlatformVersion)" />
+        <None Include="runtimes\**\*" Exclude="**\.DS_Store" Pack="true" PackagePath="runtimes" />
     </ItemGroup>
     
 </Project>

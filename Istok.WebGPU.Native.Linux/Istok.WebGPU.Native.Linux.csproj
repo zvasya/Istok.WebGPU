@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Istok.WebGPU.Native.Linux</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Istok.WebGPU.Native.Linux</PackageId>
+        <Description>Native WebGPU runtime (Google Dawn) for Linux (x64, arm64): libwebgpu_dawn.so, packaged for use with Istok.WebGPU.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="runtimes\**\*" Exclude="**\.DS_Store;**\.gitkeep" Pack="true" PackagePath="runtimes" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>
