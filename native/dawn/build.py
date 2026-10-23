@@ -82,6 +82,9 @@ def build(args, source, work, arch, version):
         "DAWN_FORCE_SYSTEM_COMPONENT_LOAD": "ON", "TINT_BUILD_TESTS": "OFF",
         "TINT_BUILD_CMD_TOOLS": "OFF", "TINT_BUILD_BENCHMARKS": "OFF",
         "TINT_BUILD_IR_BINARY": "OFF", "TINT_BUILD_NULL_WRITER": "ON",
+        "TINT_BUILD_GLSL_VALIDATOR": "OFF",
+        "DAWN_ENABLE_SPIRV_VALIDATION": "OFF",
+        "DAWN_DXC_ENABLE_ASSERTS_IN_NDEBUG": "OFF",
         "DAWN_ENABLE_DESKTOP_GL": "OFF",
         "DAWN_ENABLE_METAL": "ON" if target in ("macos", "ios", "iossimulator") else "OFF",
         "DAWN_ENABLE_VULKAN": "ON" if target in ("android", "linux", "windows") else "OFF",
@@ -103,14 +106,22 @@ def build(args, source, work, arch, version):
                      ANDROID_ABI=arch, ANDROID_PLATFORM="android-" + os.environ.get("ANDROID_API", "24"),
                      ANDROID_STL="c++_static", CMAKE_SHARED_LINKER_FLAGS="-Wl,-z,max-page-size=16384 -Wl,--build-id=sha1")
     elif target == "linux":
+        # Keep libstdc++ and libgcc dynamic. Their static archives are not
+        # guaranteed to be PIC and cannot reliably be linked into a shared
+        # webgpu_dawn library on all Linux architectures.
+        # An explicit empty value also clears the old flags from an existing
+        # CMake cache when a local build directory is reused.
         flags.update(DAWN_USE_X11="ON", DAWN_USE_WAYLAND="ON",
-                     CMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++")
+                     CMAKE_SHARED_LINKER_FLAGS="")
     elif target == "windows":
         generator = ["-G", "Visual Studio 17 2022", "-A", {"x64": "x64", "x86": "Win32", "arm64": "ARM64"}[arch]]
-        flags.update(CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded")
+        # Dawn and Abseil must use the same CRT. Abseil defaults to the DLL CRT
+        # (/MD), so forcing Dawn to the static CRT (/MT) breaks final linking.
+        flags.update(CMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDLL")
     run("cmake", "-S", source, "-B", build_dir, *generator,
         *[f"-D{k}={v}" for k, v in flags.items()])
-    run("cmake", "--build", build_dir, "--config", "Release", "--parallel", args.jobs)
+    run("cmake", "--build", build_dir, "--config", "Release",
+        "--target", "webgpu_dawn", "--parallel", args.jobs)
     run("cmake", "--install", build_dir, "--config", "Release")
     output = args.output_dir.resolve() / f"{target}-{arch}"
     output.mkdir(parents=True, exist_ok=True)
