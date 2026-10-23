@@ -65,6 +65,9 @@ the existing project layout. Building all macOS/simulator architectures combines
 the slices with `lipo`; `--arch` copies only the selected slice into that location.
 Android, Linux and Windows use architecture-specific RIDs such as `android-arm64`
 and `win-x64`. Use `--no-copy-to-packages` to build only into `artifacts/dawn`.
+Android and Linux shared libraries are stripped of symbols that are not needed
+at runtime before packaging. The build fails early if a resulting binary would
+exceed GitHub's 100 MiB per-file limit.
 
 Environment overrides: `MACOS_MIN` (11.0), `IOS_MIN` (14.0),
 `ANDROID_API` (24), and standard CMake `CC`/`CXX` on Unix.

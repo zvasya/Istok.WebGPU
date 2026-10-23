@@ -16,6 +16,7 @@ ARCHES = {
     "android": ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"],
     "linux": ["x64", "arm64"], "windows": ["x64", "x86", "arm64"],
 }
+GITHUB_MAX_BLOB_SIZE = 100 * 1024 * 1024
 
 
 def run(*args):
@@ -125,15 +126,36 @@ def build(args, source, work, arch, version):
     run("cmake", "--install", build_dir, "--config", "Release")
     output = args.output_dir.resolve() / f"{target}-{arch}"
     output.mkdir(parents=True, exist_ok=True)
-    for directory in ("bin", "lib", "include"):
-        if (install / directory).exists():
-            shutil.copytree(install / directory, output / directory, dirs_exist_ok=True)
     filename = "webgpu_dawn.dll" if target == "windows" else "libwebgpu_dawn.dylib" if target in ("macos", "ios", "iossimulator") else "libwebgpu_dawn.so"
     binaries = list(install.rglob(filename))
     if len(binaries) != 1:
         raise RuntimeError(f"Expected one {filename} in {install}, got {binaries}")
+    installed_binary = binaries[0]
+    if target == "android":
+        # CMake's Release configuration still leaves a very large ELF symbol
+        # table in Dawn. Keep the dynamic symbols needed by consumers, but
+        # remove everything that is not required at runtime before publishing.
+        ndk = Path(os.environ.get("ANDROID_NDK_HOME") or os.environ["ANDROID_NDK_ROOT"])
+        strip_tools = list((ndk / "toolchains/llvm/prebuilt").glob("*/bin/llvm-strip"))
+        if len(strip_tools) != 1:
+            raise RuntimeError(f"Expected one Android llvm-strip in {ndk}, got {strip_tools}")
+        run(strip_tools[0], "--strip-unneeded", installed_binary)
+    elif target == "linux":
+        strip_tool = shutil.which("strip")
+        if not strip_tool:
+            raise RuntimeError("GNU strip is required for Linux packaging")
+        run(strip_tool, "--strip-unneeded", installed_binary)
+    if installed_binary.stat().st_size >= GITHUB_MAX_BLOB_SIZE:
+        size_mib = installed_binary.stat().st_size / 1024 / 1024
+        raise RuntimeError(
+            f"{installed_binary} is {size_mib:.2f} MiB after stripping; "
+            "GitHub rejects files of 100 MiB or larger"
+        )
+    for directory in ("bin", "lib", "include"):
+        if (install / directory).exists():
+            shutil.copytree(install / directory, output / directory, dirs_exist_ok=True)
     binary = output / filename
-    shutil.copy2(binaries[0], binary)
+    shutil.copy2(installed_binary, binary)
     if target in ("ios", "iossimulator"):
         framework = output / "webgpu_dawn.framework"
         framework.mkdir(exist_ok=True)
