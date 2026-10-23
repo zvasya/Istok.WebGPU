@@ -49,7 +49,7 @@ public partial class WebGPUCanvas : ComponentBase, IAsyncDisposable, IWebGpuView
 	/// Event called every time a frame can be redrawn
 	/// </summary>
 	[Parameter]
-	public EventCallback<long> RenderFrame { get; set; }
+	public EventCallback<double> RenderFrame { get; set; }
 
 	/// <summary>
 	/// Event called on mouse down
@@ -115,7 +115,7 @@ public partial class WebGPUCanvas : ComponentBase, IAsyncDisposable, IWebGpuView
 	[JSInvokable]
 	public async ValueTask RenderInBlazor(float timeStamp)
 	{
-		long swElapsedMilliseconds = sw.ElapsedMilliseconds;
+		double swElapsedMilliseconds = sw.Elapsed.TotalSeconds;
 		Render?.Invoke(swElapsedMilliseconds);
 		await RenderFrame.InvokeAsync(swElapsedMilliseconds);
 		sw.Restart();
