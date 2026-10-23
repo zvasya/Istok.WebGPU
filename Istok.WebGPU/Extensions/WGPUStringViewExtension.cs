@@ -27,7 +27,7 @@ public static class WGPUStringViewExtension
 				}
 
 				IntPtr labelPtr = SilkMarshal.StringToPtr(str);
-				stringView = new WGPUStringView() { data = (byte*)labelPtr, length = (UIntPtr)(Encoding.UTF8.GetByteCount(str) + 1)};
+				stringView = new WGPUStringView() { data = (byte*)labelPtr, length = (UIntPtr)(Encoding.UTF8.GetByteCount(str))};
 				return new Scope(labelPtr);
 			}
 		}
