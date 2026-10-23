@@ -1,4 +1,5 @@
 ﻿using Examples;
+using Examples.GpuLife;
 using Istok.WebGPU;
 using Istok.WebGPU.View;
 using Silk.NET.Maths;
@@ -56,7 +57,7 @@ public partial class Home
 
             } //Get device
                 
-            _Example = new ExampleCubeMap(_Device, CanvasView, _SurfaceCapabilities, _Surface, new ResourcesProvider(Http));
+            _Example = new GpuLife(_Device, CanvasView, _SurfaceCapabilities, _Surface, new ResourcesProvider(Http));
             await _Example.OnLoad();
             Logger.LogInformation($"Loaded");
             CanvasView.Render += _Example.WindowOnRender;
