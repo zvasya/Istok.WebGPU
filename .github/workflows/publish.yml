@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: macos-latest
@@ -20,17 +23,21 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x'
-          workloads: ios, wasm-tools, android
+          global-json-file: global.json
+
+      - name: Install .NET workloads
+        run: dotnet workload install ios wasm-tools android --skip-manifest-update
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore Istok.WebGPU.Packages.slnf
 
       - name: Build project
         run: dotnet build Istok.WebGPU.Packages.slnf --configuration Release --no-restore
 
       - name: Pack NuGet package
-        run: dotnet pack Istok.WebGPU.Packages.slnf --configuration Release --no-build --output nupkgs
+        run: dotnet pack Istok.WebGPU.Packages.slnf --configuration Release --no-build --output artifacts/nuget
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push './artifacts/nuget/*.nupkg' --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate

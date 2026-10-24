@@ -4,7 +4,14 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - skia-tag.txt
       - global.json
+      - Istok.WebGPU.LowLevel.Generator/**
+      - .github/workflows/update-dawn-bindings.yml
+
+concurrency:
+  group: update-dawn-bindings-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -23,17 +30,63 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Read native Dawn revision from Skia dependencies
+        id: native_dawn
+        shell: bash
+        run: |
+          skia_tag="$(tr -d '[:space:]' < skia-tag.txt)"
+          if [[ -z "$skia_tag" ]]; then
+            echo "skia-tag.txt is empty" >&2
+            exit 1
+          fi
+
+          deps_url="https://raw.githubusercontent.com/mono/skia/${skia_tag}/infra/bots/deps/deps_gen.go"
+          echo "Reading Skia dependencies from $deps_url"
+          if ! curl --fail --silent --show-error --location --retry 3 "$deps_url" --output skia-deps.go; then
+            echo "::error file=skia-tag.txt::Cannot read Skia dependencies. skia-tag.txt must contain an existing mono/skia commit, tag or branch; SkiaSharp package versions are not mono/skia refs."
+            exit 1
+          fi
+
+          dawn_revision="$(
+            awk '
+              /"dawn.googlesource.com\/dawn":/ { in_dawn = 1; next }
+              in_dawn && /Version:/ {
+                value = $0
+                sub(/^.*Version: "/, "", value)
+                sub(/".*$/, "", value)
+                print value
+                exit
+              }
+              in_dawn && /^\t},/ { exit }
+            ' skia-deps.go
+          )"
+          rm skia-deps.go
+
+          if [[ ! "$dawn_revision" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Unable to find Dawn revision in mono/skia ref $skia_tag" >&2
+            exit 1
+          fi
+
+          printf '%s\n' "$dawn_revision" > dawn-native-version.txt
+          echo "version=$dawn_revision" >> "$GITHUB_OUTPUT"
+          echo "skia=$skia_tag" >> "$GITHUB_OUTPUT"
+
       - name: Install WebAssembly tools
         run: dotnet workload install wasm-tools --skip-manifest-update
 
-      - name: Read Dawn version from the .NET Emscripten workload
-        id: dawn
+      - name: Read Emdawn version from the .NET workload
+        id: emdawn
         shell: bash
         run: |
           sdk_version="$(dotnet --version)"
           sdk_dir="$(dotnet --list-sdks | awk -v version="$sdk_version" '$1 == version { gsub(/[\[\]]/, "", $2); print $2; exit }')"
           dotnet_root="$(dirname "$sdk_dir")"
-          feature_band="$(sed -E 's/(-(preview|rc)\.[0-9]+)\..*/\1/' <<< "$sdk_version")"
+          sdk_base="${sdk_version%%-*}"
+          sdk_patch="${sdk_base##*.}"
+          feature_band="${sdk_base%.*}.$((10#$sdk_patch / 100 * 100))"
+          if [[ "$sdk_version" =~ -((preview|rc)\.[0-9]+) ]]; then
+            feature_band+="-${BASH_REMATCH[1]}"
+          fi
 
           manifest="$(
             find "$dotnet_root/sdk-manifests/$feature_band/microsoft.net.workload.emscripten.current" \
@@ -50,23 +103,22 @@ jobs:
               -path "*/$pack_version/tools/emscripten/tools/ports/emdawnwebgpu.py" \
               -type f -print -quit
           )"
-
           emdawn_version="$(sed -nE "s/^_VERSION = '([^']+)'/\1/p" "$port_file")"
 
           if [[ ! "$emdawn_version" =~ ^v[0-9]{8}\.[0-9]{6}$ ]]; then
-            echo "Unable to find the Emdawnwebgpu version in $port_file" >&2
+            echo "Unable to find the Emdawn version in $port_file" >&2
             exit 1
           fi
 
-          printf '%s\n' "$emdawn_version" > dawn-version.txt
+          printf '%s\n' "$emdawn_version" > emdawn-version.txt
           echo "version=$emdawn_version" >> "$GITHUB_OUTPUT"
 
       - name: Download dawn.json
         shell: bash
         env:
-          DAWN_VERSION: ${{ steps.dawn.outputs.version }}
+          EMDAWN_VERSION: ${{ steps.emdawn.outputs.version }}
         run: |
-          dawn_url="https://raw.githubusercontent.com/google/dawn/${DAWN_VERSION}/src/dawn/dawn.json"
+          dawn_url="https://raw.githubusercontent.com/google/dawn/${EMDAWN_VERSION}/src/dawn/dawn.json"
           curl --fail --silent --show-error --location "$dawn_url" \
             --output Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
 
@@ -78,15 +130,18 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
         with:
-          commit-message: Update Dawn bindings to ${{ steps.dawn.outputs.version }}
+          commit-message: Update Dawn versions and WebGPU bindings
           branch: automation/update-dawn-bindings
           delete-branch: true
-          title: Update Dawn bindings to ${{ steps.dawn.outputs.version }}
+          title: Update Dawn versions and WebGPU bindings
           body: |
             Generated WebGPU bindings for:
 
-            - Emdawnwebgpu: `${{ steps.dawn.outputs.version }}`
+            - Skia: `${{ steps.native_dawn.outputs.skia }}`
+            - Native Dawn: `${{ steps.native_dawn.outputs.version }}`
+            - Emdawn/WebGPU bindings: `${{ steps.emdawn.outputs.version }}`
           add-paths: |
-            dawn-version.txt
+            dawn-native-version.txt
+            emdawn-version.txt
             Istok.WebGPU.LowLevel.Generator/codegen/dawn.json
             Istok.WebGPU.LowLevel/Generated/

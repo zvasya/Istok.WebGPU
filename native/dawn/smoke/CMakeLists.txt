@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.22)
+project(DawnSmoke LANGUAGES CXX)
+find_package(Dawn CONFIG REQUIRED)
+set_target_properties(dawn::webgpu_dawn PROPERTIES IMPORTED_LOCATION_RELEASE "${DAWN_BINARY}")
+add_executable(dawn_smoke main.cpp)
+target_compile_features(dawn_smoke PRIVATE cxx_std_17)
+target_link_libraries(dawn_smoke PRIVATE dawn::webgpu_dawn)
