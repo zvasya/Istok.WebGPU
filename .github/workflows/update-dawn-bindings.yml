@@ -2,12 +2,6 @@ name: Update Dawn bindings
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - skia-tag.txt
-      - global.json
-      - Istok.WebGPU.LowLevel.Generator/**
-      - .github/workflows/update-dawn-bindings.yml
 
 concurrency:
   group: update-dawn-bindings-${{ github.ref }}

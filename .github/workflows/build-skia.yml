@@ -2,20 +2,6 @@ name: Build SkiaSharp native libraries
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - skia-tag.txt
-      - dawn-native-version.txt
-      - native/dawn/**
-      - native/skiasharp-dawn/**
-      - .github/workflows/build-skia.yml
-  push:
-    paths:
-      - skia-tag.txt
-      - dawn-native-version.txt
-      - native/dawn/**
-      - native/skiasharp-dawn/**
-      - .github/workflows/build-skia.yml
 
 permissions:
   contents: read
