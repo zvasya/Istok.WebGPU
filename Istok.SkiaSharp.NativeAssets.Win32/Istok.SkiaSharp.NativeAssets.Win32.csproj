@@ -6,7 +6,7 @@
         <TargetFramework>net11.0</TargetFramework>
         <RootNamespace>Istok.SkiaSharp.NativeAssets.Win32</RootNamespace>
         <PackageId>Istok.SkiaSharp.NativeAssets.Win32</PackageId>
-        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Windows (x64, x86, arm64): libSkiaSharp.dll (depends on Istok.WebGPU.Native.Win32 for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Win32: reference it directly with ExcludeAssets="all" so the stock libSkiaSharp is not deployed.</Description>
+        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Windows (x64, x86, arm64): libSkiaSharp.dll (depends on Istok.WebGPU.Native.Win32 for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Win32: the stock native assets are automatically excluded from build and publish outputs.</Description>
     </PropertyGroup>
 
 </Project>

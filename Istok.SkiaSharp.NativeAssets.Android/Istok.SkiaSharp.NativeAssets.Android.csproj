@@ -7,7 +7,7 @@
         <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
         <RootNamespace>Istok.SkiaSharp.NativeAssets.Android</RootNamespace>
         <PackageId>Istok.SkiaSharp.NativeAssets.Android</PackageId>
-        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Android (arm64-v8a, armeabi-v7a, x86, x86_64): libSkiaSharp.so (depends on Istok.WebGPU.Native.Android for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Android: reference it directly with ExcludeAssets="all" so the stock libSkiaSharp is not deployed.</Description>
+        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Android (arm64-v8a, armeabi-v7a, x86, x86_64): libSkiaSharp.so (depends on Istok.WebGPU.Native.Android for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Android: the stock native assets are automatically excluded from build and publish outputs.</Description>
     </PropertyGroup>
 
     <!--

@@ -1,0 +1,14 @@
+<Project>
+    <!-- NuGet imports buildTransitive automatically. Source consumers import this file
+         after their ProjectReference items to enable the same replacement behavior. -->
+    <Target Name="_IstokRegisterSkiaSharpProjectReferences" BeforeTargets="ResolvePackageAssets">
+        <ItemGroup>
+            <_IstokSkiaSharpProjectReference Include="@(ProjectReference)"
+                                           Condition="$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Istok.SkiaSharp.NativeAssets.'))" />
+            <_IstokReplacedSkiaSharpPackage Include="@(_IstokSkiaSharpProjectReference)">
+                <NuGetPackageId>$([System.String]::Copy('%(_IstokSkiaSharpProjectReference.Filename)').Replace('Istok.', ''))</NuGetPackageId>
+            </_IstokReplacedSkiaSharpPackage>
+        </ItemGroup>
+    </Target>
+    <Import Project="SkiaSharp.NativeAssets.targets" />
+</Project>

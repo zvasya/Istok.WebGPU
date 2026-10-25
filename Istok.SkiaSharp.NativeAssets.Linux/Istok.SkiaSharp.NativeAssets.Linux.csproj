@@ -6,7 +6,7 @@
         <TargetFramework>net11.0</TargetFramework>
         <RootNamespace>Istok.SkiaSharp.NativeAssets.Linux</RootNamespace>
         <PackageId>Istok.SkiaSharp.NativeAssets.Linux</PackageId>
-        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Linux (x64, arm64): libSkiaSharp.so (depends on Istok.WebGPU.Native.Linux for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Linux: reference it directly with ExcludeAssets="all" so the stock libSkiaSharp is not deployed.</Description>
+        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for Linux (x64, arm64): libSkiaSharp.so (depends on Istok.WebGPU.Native.Linux for webgpu_dawn). Replaces SkiaSharp.NativeAssets.Linux: the stock native assets are automatically excluded from build and publish outputs.</Description>
     </PropertyGroup>
 
 </Project>

@@ -13,6 +13,8 @@
 
     <ItemGroup>
         <None Include="runtimes\**\*" Exclude="**\.DS_Store;**\.gitkeep" Pack="true" PackagePath="runtimes" />
+        <None Include="$(MSBuildThisFileDirectory)SkiaSharp.NativeAssets.targets"
+              Pack="true" PackagePath="buildTransitive/$(MSBuildProjectName).targets" Visible="false" />
     </ItemGroup>
 
     <!-- Desktop ProjectReference consumers load the libraries from bin/runtimes/<rid>/native. -->

@@ -48,7 +48,7 @@ The solution is divided into several layers to ensure flexibility and ease of ma
 * **`Istok.WebGPU.LowLevel`**: Contains the raw, auto-generated bindings.
 * **`Istok.WebGPU`**: The main high-level library. It wraps the low-level layer to provide the **Web-Idiomatic Design**.
 * **`Istok.WebGPU.Native.*`**: Projects (`.Win32`, `.Linux`, `.macOS`, `.Android`, `.iOS`) that bundle the required native binaries for their respective platforms.
-* **`Istok.SkiaSharp.NativeAssets.*`**: SkiaSharp **4.156.0-preview.1.26512.10** native libraries built with Graphite + Dawn from the `zvasya/skia` tag in `skia-tag.txt`. Each platform package depends on the matching `Istok.WebGPU.Native.*` package so SkiaSharp and the app share the same `webgpu_dawn` library (see [native/skiasharp-dawn](native/skiasharp-dawn/README.md)).
+* **`Istok.SkiaSharp.NativeAssets.*`**: SkiaSharp **4.156.0-preview.1.26512.10** native libraries built with Graphite + Dawn from the `zvasya/skia` tag in `skia-tag.txt`. Each platform package depends on the matching `Istok.WebGPU.Native.*` package so SkiaSharp and the app share the same `webgpu_dawn` library. NuGet consumers do not need explicit `ExcludeAssets` references: the packages automatically exclude the matching stock native assets from build and publish outputs, including when referenced transitively (see [native/skiasharp-dawn](native/skiasharp-dawn/README.md)).
 * **`Istok.WebGPU.View.*`**: (including `.Browser`, `.SDL`) Provides a unified interface for window management, including surface creation and handling display dimensions.
 
 ---

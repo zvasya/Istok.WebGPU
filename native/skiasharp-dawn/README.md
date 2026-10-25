@@ -97,11 +97,22 @@ Replace the stock native assets, keep the managed SkiaSharp package:
 
 ```xml
 <PackageReference Include="SkiaSharp" Version="4.156.0-preview.1.26512.10" />
-<PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="4.156.0-preview.1.26512.10" ExcludeAssets="all" />
 <PackageReference Include="Istok.SkiaSharp.NativeAssets.macOS" Version="4.156.0-preview.1.26512.10.dawn.1" />
 ```
 
-`Istok.WebGPU.Native.macOS` comes in as a dependency.
+`Istok.WebGPU.Native.macOS` comes in as a dependency. Each
+`Istok.SkiaSharp.NativeAssets.<platform>` package automatically excludes the
+matching stock package's native assets from build and publish outputs, including
+Android and iOS packaging. This also works when the Istok package is referenced
+transitively. Stock packages may still be downloaded during restore because they
+remain dependencies of managed SkiaSharp; no explicit `ExcludeAssets` reference
+is needed. Only platforms with an Istok replacement are filtered.
+
+When using `ProjectReference` instead of NuGet, import
+`native/skiasharp-dawn/Istok.SkiaSharp.NativeAssets.ProjectReference.targets`
+after the project references, as the examples do. NuGet build targets do not flow
+through project references. The iOS source example additionally imports the
+framework registration targets for SkiaSharp and Dawn.
 
 The WebGPU handles passed to `SKGraphiteContext.CreateDawn` must come from the
 same `webgpu_dawn` library that libSkiaSharp is linked against; Istok.WebGPU

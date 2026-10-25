@@ -1,0 +1,28 @@
+<Project>
+    <!-- Packed under each platform package's name. All imports register their platform;
+         the identical targets below run once, using the combined replacement list. -->
+    <ItemGroup Condition="$(MSBuildThisFileName.StartsWith('Istok.SkiaSharp.NativeAssets.'))">
+        <_IstokReplacedSkiaSharpPackage Include="$(MSBuildThisFileName.Replace('Istok.', ''))">
+            <NuGetPackageId>$(MSBuildThisFileName.Replace('Istok.', ''))</NuGetPackageId>
+        </_IstokReplacedSkiaSharpPackage>
+    </ItemGroup>
+
+    <!-- Filter before conflict resolution, deps.json generation, and mobile SDK packaging.
+         Match package identity rather than filenames: our libraries have the same names. -->
+    <Target Name="_IstokReplaceSkiaSharpBuildAssets" AfterTargets="ResolvePackageAssets">
+        <ItemGroup>
+            <NativeCopyLocalItems Remove="@(_IstokReplacedSkiaSharpPackage)"
+                                  MatchOnMetadata="NuGetPackageId" MatchOnMetadataOptions="CaseInsensitive" />
+            <RuntimeTargetsCopyLocalItems Remove="@(_IstokReplacedSkiaSharpPackage)"
+                                          MatchOnMetadata="NuGetPackageId" MatchOnMetadataOptions="CaseInsensitive" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Publish can resolve assets again (e.g. PreserveStoreLayout), independently of build. -->
+    <Target Name="_IstokReplaceSkiaSharpPublishAssets" AfterTargets="_ResolveCopyLocalAssetsForPublish">
+        <ItemGroup>
+            <_ResolvedCopyLocalPublishAssets Remove="@(_IstokReplacedSkiaSharpPackage)"
+                                             MatchOnMetadata="NuGetPackageId" MatchOnMetadataOptions="CaseInsensitive" />
+        </ItemGroup>
+    </Target>
+</Project>
