@@ -6,12 +6,9 @@
 CMake downloads Dawn's pinned dependencies. No Skia checkout is required.
 
 The `Update Dawn bindings` workflow derives the native revision from
-`infra/bots/deps/deps_gen.go` at the mono/skia revision pinned by `skia-tag.txt`.
-Despite its name, this file accepts a commit SHA, tag or branch from **mono/skia**,
-not a SkiaSharp NuGet version. The current SHA `a9e4fac6f7587c9993142d3109ee411843e70655`
-is the `externals/skia` submodule revision in mono/SkiaSharp tag
-`v4.156.0-preview.1.26512.10`. Prefer a commit SHA for reproducible builds; when
-updating SkiaSharp, copy the submodule SHA from the matching release tag.
+`infra/bots/deps/deps_gen.go` at the **zvasya/skia** ref in `skia-tag.txt`.
+The SkiaSharp native workflow builds the tag in the same file, including the
+fork's prebuilt shared Dawn support without applying a local patch.
 Separately, it records the Emdawn release from the .NET workload in
 `emdawn-version.txt` and generates the shared WebGPU bindings from that older,
 browser-compatible API surface.

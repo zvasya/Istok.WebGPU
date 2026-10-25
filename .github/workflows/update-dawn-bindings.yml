@@ -40,10 +40,10 @@ jobs:
             exit 1
           fi
 
-          deps_url="https://raw.githubusercontent.com/mono/skia/${skia_tag}/infra/bots/deps/deps_gen.go"
+          deps_url="https://raw.githubusercontent.com/zvasya/skia/${skia_tag}/infra/bots/deps/deps_gen.go"
           echo "Reading Skia dependencies from $deps_url"
           if ! curl --fail --silent --show-error --location --retry 3 "$deps_url" --output skia-deps.go; then
-            echo "::error file=skia-tag.txt::Cannot read Skia dependencies. skia-tag.txt must contain an existing mono/skia commit, tag or branch; SkiaSharp package versions are not mono/skia refs."
+            echo "::error file=skia-tag.txt::Cannot read Skia dependencies. skia-tag.txt must contain an existing zvasya/skia commit, tag or branch; SkiaSharp package versions are not zvasya/skia refs."
             exit 1
           fi
 
@@ -63,7 +63,7 @@ jobs:
           rm skia-deps.go
 
           if [[ ! "$dawn_revision" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Unable to find Dawn revision in mono/skia ref $skia_tag" >&2
+            echo "Unable to find Dawn revision in zvasya/skia ref $skia_tag" >&2
             exit 1
           fi
 
