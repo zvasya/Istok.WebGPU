@@ -2,12 +2,17 @@
   "solution": {
     "path": "Istok.WebGPU.slnx",
     "projects": [
+      "Istok.SkiaSharp.NativeAssets.Android/Istok.SkiaSharp.NativeAssets.Android.csproj",
+      "Istok.SkiaSharp.NativeAssets.iOS/Istok.SkiaSharp.NativeAssets.iOS.csproj",
+      "Istok.SkiaSharp.NativeAssets.Linux/Istok.SkiaSharp.NativeAssets.Linux.csproj",
+      "Istok.SkiaSharp.NativeAssets.macOS/Istok.SkiaSharp.NativeAssets.macOS.csproj",
+      "Istok.SkiaSharp.NativeAssets.Win32/Istok.SkiaSharp.NativeAssets.Win32.csproj",
       "Istok.WebGPU.LowLevel.Generator/Istok.WebGPU.LowLevel.Generator.csproj",
       "Istok.WebGPU.LowLevel/Istok.WebGPU.LowLevel.csproj",
       "Istok.WebGPU.Native.Android/Istok.WebGPU.Native.Android.csproj",
       "Istok.WebGPU.Native.iOS/Istok.WebGPU.Native.iOS.csproj",
-      "Istok.WebGPU.Native.macOS/Istok.WebGPU.Native.macOS.csproj",
       "Istok.WebGPU.Native.Linux/Istok.WebGPU.Native.Linux.csproj",
+      "Istok.WebGPU.Native.macOS/Istok.WebGPU.Native.macOS.csproj",
       "Istok.WebGPU.Native.Win32/Istok.WebGPU.Native.Win32.csproj",
       "Istok.WebGPU.View.Browser/Istok.WebGPU.View.Browser.csproj",
       "Istok.WebGPU.View.SDL/Istok.WebGPU.View.SDL.csproj",

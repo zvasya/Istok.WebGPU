@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\native\skiasharp-dawn\Istok.SkiaSharp.NativeAssets.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net11.0-ios</TargetFramework>
+        <RootNamespace>Istok.SkiaSharp.NativeAssets.iOS</RootNamespace>
+        <PackageId>Istok.SkiaSharp.NativeAssets.iOS</PackageId>
+        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for iOS and the iOS simulator: libSkiaSharp.framework (depends on Istok.WebGPU.Native.iOS for webgpu_dawn). Replaces SkiaSharp.NativeAssets.iOS: reference it directly with ExcludeAssets="all" so the stock libSkiaSharp is not deployed.</Description>
+    </PropertyGroup>
+
+</Project>

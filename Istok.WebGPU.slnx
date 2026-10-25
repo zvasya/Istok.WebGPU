@@ -15,6 +15,13 @@
     <Project Path="Istok.WebGPU.Native.macOS\Istok.WebGPU.Native.macOS.csproj" />
     <Project Path="Istok.WebGPU.Native.Win32\Istok.WebGPU.Native.Win32.csproj" />
   </Folder>
+  <Folder Name="/Native/SkiaSharp/">
+    <Project Path="Istok.SkiaSharp.NativeAssets.Android\Istok.SkiaSharp.NativeAssets.Android.csproj" />
+    <Project Path="Istok.SkiaSharp.NativeAssets.iOS\Istok.SkiaSharp.NativeAssets.iOS.csproj" />
+    <Project Path="Istok.SkiaSharp.NativeAssets.Linux\Istok.SkiaSharp.NativeAssets.Linux.csproj" />
+    <Project Path="Istok.SkiaSharp.NativeAssets.macOS\Istok.SkiaSharp.NativeAssets.macOS.csproj" />
+    <Project Path="Istok.SkiaSharp.NativeAssets.Win32\Istok.SkiaSharp.NativeAssets.Win32.csproj" />
+  </Folder>
   <Project Path="AssetManager/AssetManager.csproj" />
   <Project Path="Istok.Mathematics/Istok.Mathematics.csproj" />
   <Project Path="Istok.WebGPU.LowLevel.Generator\Istok.WebGPU.LowLevel.Generator.csproj" />

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\native\skiasharp-dawn\Istok.SkiaSharp.NativeAssets.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <RootNamespace>Istok.SkiaSharp.NativeAssets.macOS</RootNamespace>
+        <PackageId>Istok.SkiaSharp.NativeAssets.macOS</PackageId>
+        <Description>Native SkiaSharp $(SkiaSharpVersion) binaries built with Graphite + Dawn (WebGPU) support for macOS (universal arm64 + x64): libSkiaSharp.dylib (depends on Istok.WebGPU.Native.macOS for webgpu_dawn). Replaces SkiaSharp.NativeAssets.macOS: reference it directly with ExcludeAssets="all" so the stock libSkiaSharp is not deployed.</Description>
+    </PropertyGroup>
+
+</Project>

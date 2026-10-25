@@ -1,0 +1,36 @@
+<Project>
+
+    <!-- Shared settings for Istok.SkiaSharp.NativeAssets.* (libSkiaSharp built with Graphite + Dawn). -->
+    <PropertyGroup>
+        <SkiaSharpVersion>4.156.0-preview.1.26512.10</SkiaSharpVersion>
+        <Version>$(SkiaSharpVersion).dawn.1</Version>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>true</IsPackable>
+        <IncludeSymbols>false</IncludeSymbols>
+        <PackageTags>skiasharp skia graphite webgpu dawn native</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="runtimes\**\*" Exclude="**\.DS_Store;**\.gitkeep" Pack="true" PackagePath="runtimes" />
+    </ItemGroup>
+
+    <!-- Desktop ProjectReference consumers load the libraries from bin/runtimes/<rid>/native. -->
+    <ItemGroup Condition="'$(TargetPlatformIdentifier)' == ''">
+        <None Update="runtimes\**\*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <!-- libSkiaSharp links against webgpu_dawn, which ships in the matching Istok.WebGPU.Native.<platform> package. -->
+    <ItemGroup>
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\$(MSBuildProjectName.Replace('Istok.SkiaSharp.NativeAssets.', 'Istok.WebGPU.Native.'))\$(MSBuildProjectName.Replace('Istok.SkiaSharp.NativeAssets.', 'Istok.WebGPU.Native.')).csproj" />
+    </ItemGroup>
+
+    <Target Name="_IstokCheckSkiaSharpNatives" BeforeTargets="GenerateNuspec">
+        <ItemGroup>
+            <_IstokSkiaSharpNative Include="runtimes\**\*libSkiaSharp*" />
+        </ItemGroup>
+        <Error Condition="'@(_IstokSkiaSharpNative)' == ''"
+               Text="$(PackageId): runtimes/ is empty. Build the native libraries first (native/skiasharp-dawn)." />
+    </Target>
+
+</Project>

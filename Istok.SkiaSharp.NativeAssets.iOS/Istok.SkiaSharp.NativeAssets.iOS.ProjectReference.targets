@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Import this only when referencing Istok.SkiaSharp.NativeAssets.iOS as a ProjectReference
+  (together with Istok.WebGPU.Native.iOS.ProjectReference.targets for webgpu_dawn.framework).
+  The NuGet package needs no targets: the iOS SDK picks up runtimes/<rid>/native/*.framework itself.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="_IstokSkiaSharpNativeAssetsiOSFrameworks" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <_IstokSkiaSharpiOSRid Condition="$(RuntimeIdentifier.StartsWith('iossimulator'))">iossimulator</_IstokSkiaSharpiOSRid>
+            <_IstokSkiaSharpiOSRid Condition="'$(_IstokSkiaSharpiOSRid)' == '' And $(RuntimeIdentifier.StartsWith('ios'))">ios</_IstokSkiaSharpiOSRid>
+        </PropertyGroup>
+
+        <ItemGroup Condition="'$(_IstokSkiaSharpiOSRid)' != ''">
+            <NativeReference Include="$(MSBuildThisFileDirectory)runtimes/$(_IstokSkiaSharpiOSRid)/native/libSkiaSharp.framework">
+                <Kind>Framework</Kind>
+                <SmartLink>False</SmartLink>
+            </NativeReference>
+        </ItemGroup>
+    </Target>
+</Project>
