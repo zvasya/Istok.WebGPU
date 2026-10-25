@@ -29,7 +29,8 @@ public class MainActivity : SilkActivity
 		IView window = Silk.NET.Windowing.Window.GetView(ViewOptions.DefaultVulkan); // note also GetView, instead of Window.Create.
 		window.Initialize();
 		
-		_Instance = GPU.Create();
+		// Skia Graphite waits on Dawn futures with a timeout.
+		_Instance = GPU.Create(WGPUInstanceFeatureName.TimedWaitAny);
      
 		_Surface = _Instance.CreateWebGPUSurface(window);
 		
@@ -58,7 +59,7 @@ public class MainActivity : SilkActivity
 		
 		IWebGpuView webGpuView = new WebGpuSdlView(window);
 		
-		_Example = new ExampleCubeMap(_Device, webGpuView, _SurfaceCapabilities, _Surface,  new ResourcesProvider());
+		_Example = new ExampleSkia(_Instance, _Device, webGpuView, _SurfaceCapabilities, _Surface,  new ResourcesProvider());
 		_Example.OnLoad().Wait();
 		webGpuView.Render += _Example.WindowOnRender;
 		webGpuView.FramebufferResize += _Example.FramebufferResize;

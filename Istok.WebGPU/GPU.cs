@@ -37,6 +37,19 @@ public unsafe partial class GPU : IDisposable
 	{
 		return new GPU(wgpuCreateInstance(descriptor));
 	}
+
+	public static GPU Create(params ReadOnlySpan<WGPUInstanceFeatureName> requiredFeatures)
+	{
+		fixed (WGPUInstanceFeatureName* requiredFeaturesPtr = requiredFeatures)
+		{
+			WGPUInstanceDescriptor descriptor = new()
+			{
+				requiredFeatureCount = (UIntPtr)requiredFeatures.Length,
+				requiredFeatures = requiredFeaturesPtr,
+			};
+			return new GPU(wgpuCreateInstance(&descriptor));
+		}
+	}
 	
 	public unsafe Task<GPUAdapter> RequestAdapter(in WGPURequestAdapterOptions options)
 	{

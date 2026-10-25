@@ -9,7 +9,7 @@ namespace Examples;
 
 public class HelloTriangle : ExampleBase
 {
-	public HelloTriangle(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(device, window, surfaceCapabilities, surface, resourcesProvider)
+	public HelloTriangle(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
 	{
 	}
 

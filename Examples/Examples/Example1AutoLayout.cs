@@ -57,7 +57,7 @@ public class Example1AutoLayout : ExampleBase
         }
     ];
 
-    public Example1AutoLayout(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(device, window, surfaceCapabilities, surface, resourcesProvider)
+    public Example1AutoLayout(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
     {
         _StartTime = DateTime.UtcNow;
     }

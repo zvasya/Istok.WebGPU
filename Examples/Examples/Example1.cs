@@ -59,7 +59,7 @@ public class Example1 : ExampleBase
         }
     ];
 
-    public Example1(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(device, window, surfaceCapabilities, surface, resourcesProvider)
+    public Example1(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
     {
         _StartTime = DateTime.UtcNow;
     }

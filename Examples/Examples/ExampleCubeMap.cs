@@ -92,8 +92,8 @@ public class ExampleCubeMap : ExampleBase
 		return Matrix4x4.Transpose(inverseModel);
 	}
 
-	public ExampleCubeMap(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider)
-		: base(device, window, surfaceCapabilities, surface, resourcesProvider)
+	public ExampleCubeMap(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider)
+		: base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
 	{
 		_StartTime = DateTime.UtcNow;
 	}

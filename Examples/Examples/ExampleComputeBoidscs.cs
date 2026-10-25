@@ -41,7 +41,7 @@ public class ExampleComputeBoids : ExampleBase
         public float rule3Scale;
     }
 
-    public ExampleComputeBoids(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(device, window, surfaceCapabilities, surface, resourcesProvider)
+    public ExampleComputeBoids(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
     {
         
     }

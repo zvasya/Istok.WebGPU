@@ -12,7 +12,7 @@ namespace Examples.GpuLife;
 
 public class GpuLife : ExampleBase
 {
-	public GpuLife(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(device, window, surfaceCapabilities, surface, resourcesProvider)
+	public GpuLife(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider) : base(instance, device, window, surfaceCapabilities, surface, resourcesProvider)
 	{
 	}
 

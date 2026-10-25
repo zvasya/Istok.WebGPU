@@ -9,8 +9,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
         <RootNamespace>ExampleBrowser</RootNamespace>
-        <EmccExtraCFlags>$(EmccExtraCFlags) --use-port=emdawnwebgpu</EmccExtraCFlags>
-        <EmccExtraLDFlags>$(EmccExtraLDFlags) --use-port=emdawnwebgpu -sASSERTIONS=0</EmccExtraLDFlags>
         
     </PropertyGroup>
 
@@ -22,6 +20,7 @@
         <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="11.0.0-rc.2.26504.105" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0-rc.2.26504.105" PrivateAssets="all" />
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.156.0-preview.1.26512.10" />
     </ItemGroup>
 
     <ItemGroup>
@@ -29,7 +28,7 @@
         <ProjectReference Include="..\Examples\Examples.csproj" />
         <ProjectReference Include="..\..\Istok.WebGPU\Istok.WebGPU.csproj" />
     </ItemGroup>
-
+    
     <Target Name="RegisterWgpuNativePInvokeModule" BeforeTargets="_GenerateManagedToNative">
         <ItemGroup>
             <_WasmPInvokeModules Include="webgpu_dawn" />

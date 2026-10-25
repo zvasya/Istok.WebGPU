@@ -7,14 +7,16 @@ namespace Examples;
 
 public abstract unsafe class ExampleBase : IDisposable
 {
+	protected readonly GPU _instance;
 	protected readonly GPUDevice _device;
 	protected readonly IWebGpuView _Window;
 	protected readonly GPUSurface _Surface;
 	protected readonly GPUSurfaceCapabilities _SurfaceCapabilities;
 	protected readonly IResourcesProvider _ResourcesProvider;
 
-	public ExampleBase(GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider)
+	public ExampleBase(GPU instance, GPUDevice device, IWebGpuView window, GPUSurfaceCapabilities surfaceCapabilities, GPUSurface surface, IResourcesProvider resourcesProvider)
 	{
+		_instance = instance;
 		_device = device;
 		_Window = window;
 		_SurfaceCapabilities = surfaceCapabilities;

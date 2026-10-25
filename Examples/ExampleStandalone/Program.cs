@@ -52,7 +52,8 @@ public static unsafe class WebGPUTexturedQuad
 
 	private static void WindowOnLoad()
 	{
-		_Instance = GPU.Create();
+		// Skia Graphite waits on Dawn futures with a timeout.
+		_Instance = GPU.Create(WGPUInstanceFeatureName.TimedWaitAny);
 		
 		_Surface = _Instance.CreateWebGPUSurface(_Window);
 
@@ -76,14 +77,14 @@ public static unsafe class WebGPUTexturedQuad
 		{
 			//Get device
 			GPUDeviceDescriptor deviceDescriptor = new GPUDeviceDescriptor();
-
+			
 			_Device = _Adapter.RequestDevice(deviceDescriptor).Result;
 
 			Console.WriteLine($"Got device {(nuint)_Device.Handle.Handle:X}");
 		} //Get device
 
 		IWebGpuView webGpuView = new WebGpuSdlView(_Window);
-		_Example = new ExampleCubeMap(_Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
+		_Example = new ExampleSkia(_Instance, _Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
 		_Example.OnLoad().Wait();
 		webGpuView.Render += _Example.WindowOnRender;
 		webGpuView.FramebufferResize += _Example.FramebufferResize;

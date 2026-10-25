@@ -38,7 +38,7 @@ SilkMobile.RunApp([], strings =>
     IView window = Window.GetView(options);
     window.Initialize();
 
-    _Instance = GPU.Create();
+    _Instance = GPU.Create(WGPUInstanceFeatureName.TimedWaitAny);
     
     _Surface = _Instance.CreateWebGPUSurfaceIOS(window);
     {
@@ -73,7 +73,7 @@ SilkMobile.RunApp([], strings =>
 
     IWebGpuView webGpuView = new WebGpuSdlView(window);
 
-    _Example = new GpuLife(_Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
+    _Example = new ExampleSkia(_Instance, _Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
     _Example.OnLoad().Wait();
     webGpuView.Render += _Example.WindowOnRender;
     webGpuView.FramebufferResize += _Example.FramebufferResize;
