@@ -94,6 +94,12 @@ jobs:
         env:
           SKIA_WORK_DIR: ${{ runner.temp }}/sk
         run: python native/skiasharp-dawn/build.py ${{ matrix.platform }} --arch ${{ matrix.arch }} --jobs 2 --work-dir "$SKIA_WORK_DIR"
+      - name: Upload verified Dawn library and headers
+        uses: actions/upload-artifact@v4
+        with:
+          name: dawn-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/sk/dawn-artifacts/${{ matrix.platform }}-${{ matrix.arch }}/
+          if-no-files-found: error
       - name: Upload verified SkiaSharp library
         # Artifact ZIPs don't preserve executable permissions. Packaging verifies
         # and re-signs the final Apple binaries after downloading them.
@@ -120,12 +126,20 @@ jobs:
         with:
           pattern: skia-*
           path: artifacts/skia
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dawn-*
+          path: artifacts/dawn
       - name: Assemble runtime libraries
         shell: bash
         run: |
           for path in artifacts/skia/skia-*; do
             mv "$path" "artifacts/skia/${path##*/skia-}"
           done
+          for path in artifacts/dawn/dawn-*; do
+            mv "$path" "artifacts/dawn/${path##*/dawn-}"
+          done
+          python native/dawn/package.py
           python native/skiasharp-dawn/package.py
           echo "SKIA_TAG=$(tr -d '[:space:]' < skia-tag.txt)" >> "$GITHUB_ENV"
       - name: Create pull request
@@ -133,10 +147,10 @@ jobs:
         with:
           branch: automation/update-skia-native
           delete-branch: true
-          commit-message: Update native SkiaSharp libraries to ${{ env.SKIA_TAG }}
-          title: Update native SkiaSharp libraries to ${{ env.SKIA_TAG }}
+          commit-message: Update native SkiaSharp and Dawn libraries for ${{ env.SKIA_TAG }}
+          title: Update native SkiaSharp and Dawn libraries for ${{ env.SKIA_TAG }}
           body: |
-            Update SkiaSharp libraries from `zvasya/skia` at `${{ env.SKIA_TAG }}` (`skia-tag.txt`).
+            Update SkiaSharp libraries from `zvasya/skia` at `${{ env.SKIA_TAG }}` (`skia-tag.txt`) and the shared Dawn libraries built alongside them.
 
             Built with Graphite and shared Dawn from `dawn-native-version.txt`, using the same Dawn build settings as Istok.WebGPU.Native packages. No local Skia patch is applied.
 
@@ -147,3 +161,8 @@ jobs:
             Istok.SkiaSharp.NativeAssets.Android/runtimes/
             Istok.SkiaSharp.NativeAssets.Linux/runtimes/
             Istok.SkiaSharp.NativeAssets.Win32/runtimes/
+            Istok.WebGPU.Native.macOS/runtimes/
+            Istok.WebGPU.Native.iOS/runtimes/
+            Istok.WebGPU.Native.Android/runtimes/
+            Istok.WebGPU.Native.Linux/runtimes/
+            Istok.WebGPU.Native.Win32/runtimes/
