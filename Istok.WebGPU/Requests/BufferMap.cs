@@ -26,7 +26,7 @@ public static unsafe class BufferMap
 	
 	public static Task<WGPUMapAsyncStatus> Request(GPUBuffer buffer, WGPUMapMode mode, UIntPtr offset, UIntPtr size)
 	{
-		var taskCompletionSource = new CallbackResult();
+		var taskCompletionSource = new CallbackResult(TaskCreationOptions.RunContinuationsAsynchronously);
 		var pin = Callback<CallbackResult>.Register(taskCompletionSource);
 		
 		wgpuBufferMapAsync(
@@ -36,6 +36,7 @@ public static unsafe class BufferMap
 			size,
 			new WGPUBufferMapCallbackInfo()
 			{
+				mode = WGPUCallbackMode.AllowSpontaneous,
 				callback = pfnCallback,
 				
 				userdata1 = (void*)GCHandle.ToIntPtr(pin)
