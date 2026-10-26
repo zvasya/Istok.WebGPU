@@ -9,6 +9,7 @@
 
 
     <ItemGroup>
+        <PackageReference Include="glTF2Loader" Version="2.0.0" />
         <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
         <PackageReference Include="Silk.NET.Windowing" Version="2.22.0"/>
