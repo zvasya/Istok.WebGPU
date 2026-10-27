@@ -8,6 +8,7 @@
     <Project Path="Examples/Examples/Examples.csproj" />
     <Project Path="Examples/ExampleStandalone/ExampleStandalone.csproj" />
     <Project Path="Examples/GenerateBrdfLutStandalone/GenerateBrdfLutStandalone.csproj" />
+    <Project Path="Examples/FilterEnvmapStandalone/FilterEnvmapStandalone.csproj" />
   </Folder>
   <Folder Name="/Native/">
     <Project Path="Istok.WebGPU.Native.Android\Istok.WebGPU.Native.Android.csproj" />
