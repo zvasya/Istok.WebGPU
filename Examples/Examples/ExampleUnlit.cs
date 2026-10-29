@@ -49,7 +49,7 @@ public class ExampleUnlit : ExampleBase
 
     public override async Task OnLoad()
     {
-        var model = await UnlitGltfModel.LoadAsync(_ResourcesProvider, "Models/DamagedHelmet/DamagedHelmet.gltf");
+        var model = await GltfModel.LoadAsync(_ResourcesProvider, "Models/DamagedHelmet/DamagedHelmet.gltf");
         _indexCount = (uint)model.Indices.Length;
         _baseColor = model.BaseColor;
         string code = await _ResourcesProvider.LoadTextAsync("Shaders/example_unlit.wgsl");
@@ -64,8 +64,8 @@ public class ExampleUnlit : ExampleBase
             WGPUVertexAttribute* attributes = stackalloc WGPUVertexAttribute[]
             {
                 new() { shaderLocation = 0, format = WGPUVertexFormat.Float32X3, offset = 0 },
-                new() { shaderLocation = 1, format = WGPUVertexFormat.Float32X4, offset = (ulong)sizeof(Vector3) },
-                new() { shaderLocation = 2, format = WGPUVertexFormat.Float32X2, offset = (ulong)(sizeof(Vector3) + sizeof(Vector4)) },
+                new() { shaderLocation = 1, format = WGPUVertexFormat.Float32X4, offset = (ulong)(sizeof(Vector3) * 2) },
+                new() { shaderLocation = 2, format = WGPUVertexFormat.Float32X2, offset = (ulong)(sizeof(Vector3) * 2 + sizeof(Vector4)) },
             };
             var depthState = new WGPUDepthStencilState
             {
@@ -84,7 +84,7 @@ public class ExampleUnlit : ExampleBase
                     {
                         attributes = attributes,
                         attributeCount = 3,
-                        arrayStride = (ulong)sizeof(UnlitGltfModel.Vertex),
+                        arrayStride = (ulong)sizeof(GltfModel.Vertex),
                         stepMode = WGPUVertexStepMode.Vertex,
                     }],
                 },
@@ -111,11 +111,11 @@ public class ExampleUnlit : ExampleBase
             _vertexBuffer = _device.CreateBuffer(new GPUBufferDescriptor
             {
                 Label = "Unlit: vertices",
-                Size = (ulong)model.Vertices.Length * (ulong)sizeof(UnlitGltfModel.Vertex),
+                Size = (ulong)model.Vertices.Length * (ulong)sizeof(GltfModel.Vertex),
                 Usage = WGPUBufferUsage.Vertex,
                 MappedAtCreation = true,
             });
-            model.Vertices.AsSpan().CopyTo(_vertexBuffer.GetMappedRange<UnlitGltfModel.Vertex>(0, model.Vertices.Length));
+            model.Vertices.AsSpan().CopyTo(_vertexBuffer.GetMappedRange<GltfModel.Vertex>(0, model.Vertices.Length));
             _vertexBuffer.Unmap();
             _indexBuffer = _device.CreateBuffer(new GPUBufferDescriptor
             {

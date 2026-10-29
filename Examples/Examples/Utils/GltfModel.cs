@@ -9,26 +9,35 @@ namespace Examples.Utils;
 
 // Render the first mesh primitive, without applying the glTF scene graph.
 // This reader deliberately covers that static, uncompressed triangle-mesh example.
-internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] Indices,
-    Vector4 BaseColor, byte[]? BaseColorImage)
+internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, GltfModel.MaterialData Material)
 {
+    public Vector4 BaseColor => Material.BaseColorFactor;
+    public byte[]? BaseColorImage => Material.BaseColorTexture.Image;
+
+    internal sealed record TextureData(byte[]? Image, int TexCoord, Sampler? Sampler);
+    internal sealed record MaterialData(Vector4 BaseColorFactor, Vector4 MetallicRoughnessNormalOcclusion,
+        Vector4 EmissiveAlphaCutoff, uint AlphaMode, bool DoubleSided,
+        TextureData BaseColorTexture, TextureData MetallicRoughnessTexture, TextureData NormalTexture,
+        TextureData OcclusionTexture, TextureData EmissiveTexture);
     [StructLayout(LayoutKind.Sequential)]
     internal struct Vertex
     {
         public Vector3 Position;
+        public Vector3 Normal;
         public Vector4 Color;
         public Vector2 UV;
+        public Vector2 UV1;
     }
 
-    public static async Task<UnlitGltfModel> LoadAsync(IResourcesProvider resources, string path)
+    public static async Task<GltfModel> LoadAsync(IResourcesProvider resources, string path)
     {
         var model = Interface.DeserializeModel(await resources.LoadTextAsync(path));
         if (model.ExtensionsRequired is { Length: > 0 })
-            throw new NotSupportedException("The unlit example requires an uncompressed core glTF 2.0 model.");
+            throw new NotSupportedException("This example requires an uncompressed core glTF 2.0 model.");
         var primitive = model.Meshes?.FirstOrDefault()?.Primitives?.FirstOrDefault()
             ?? throw new InvalidDataException("The glTF model has no mesh primitives.");
         if (primitive.Mode != MeshPrimitive.ModeEnum.TRIANGLES)
-            throw new NotSupportedException("The unlit example supports triangle lists only.");
+            throw new NotSupportedException("This example supports triangle lists only.");
 
         string directory = path[..(path.LastIndexOf('/') + 1)];
         async Task<byte[]> ReadUri(string uri)
@@ -100,6 +109,10 @@ internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] I
         var vertices = new Vertex[positions.Length / 3];
         float[]? uv = primitive.Attributes.TryGetValue("TEXCOORD_0", out int uvIndex)
             ? ReadAttribute(uvIndex, Accessor.TypeEnum.VEC2, 2) : null;
+        float[]? uv1 = primitive.Attributes.TryGetValue("TEXCOORD_1", out int uv1Index)
+            ? ReadAttribute(uv1Index, Accessor.TypeEnum.VEC2, 2) : null;
+        float[]? normals = primitive.Attributes.TryGetValue("NORMAL", out int normalIndex)
+            ? ReadAttribute(normalIndex, Accessor.TypeEnum.VEC3, 3) : null;
         int colorComponents = 4;
         float[]? colors = null;
         if (primitive.Attributes.TryGetValue("COLOR_0", out int colorIndex))
@@ -107,7 +120,8 @@ internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] I
             colorComponents = model.Accessors[colorIndex].Type == Accessor.TypeEnum.VEC3 ? 3 : 4;
             colors = ReadAttribute(colorIndex, colorComponents == 3 ? Accessor.TypeEnum.VEC3 : Accessor.TypeEnum.VEC4, colorComponents);
         }
-        if ((uv != null && uv.Length != vertices.Length * 2) ||
+        if ((normals != null && normals.Length != vertices.Length * 3) ||
+            (uv1 != null && uv1.Length != vertices.Length * 2) || (uv != null && uv.Length != vertices.Length * 2) ||
             (colors != null && colors.Length != vertices.Length * colorComponents))
             throw new InvalidDataException("Vertex attribute counts do not match POSITION.");
         for (int i = 0; i < vertices.Length; i++)
@@ -115,10 +129,12 @@ internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] I
             vertices[i] = new Vertex
             {
                 Position = new Vector3(positions[3 * i], positions[3 * i + 1], positions[3 * i + 2]),
+                Normal = normals == null ? Vector3.UnitY : new Vector3(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]),
                 Color = colors == null ? Vector4.One : new Vector4(colors[colorComponents * i],
                     colors[colorComponents * i + 1], colors[colorComponents * i + 2], colorComponents == 4 ? colors[colorComponents * i + 3] : 1),
                 // ImageSharp and WebGPU both use top-left image coordinates; glTF UVs need no flip.
                 UV = uv == null ? Vector2.Zero : new Vector2(uv[2 * i], uv[2 * i + 1]),
+                UV1 = uv1 == null ? Vector2.Zero : new Vector2(uv1[2 * i], uv1[2 * i + 1]),
             };
         }
 
@@ -147,16 +163,36 @@ internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] I
         if (indices.Length == 0 || indices.Length % 3 != 0)
             throw new InvalidDataException("A triangle list must contain complete triangles.");
 
-        var material = primitive.Material.HasValue ? model.Materials[primitive.Material.Value].PbrMetallicRoughness : null;
-        Vector4 baseColor = material?.BaseColorFactor is { } factor
-            ? new Vector4(factor[0], factor[1], factor[2], factor[3]) : Vector4.One;
-        byte[]? image = null;
-        if (material?.BaseColorTexture is { } textureInfo)
+        var material = primitive.Material.HasValue ? model.Materials[primitive.Material.Value] : null;
+        var pbr = material?.PbrMetallicRoughness;
+        var factor = pbr?.BaseColorFactor;
+        var emissive = material?.EmissiveFactor;
+        var data = new MaterialData(
+            factor == null ? Vector4.One : new Vector4(factor[0], factor[1], factor[2], factor[3]),
+            new Vector4(pbr?.MetallicFactor ?? 1, pbr?.RoughnessFactor ?? 1,
+                material?.NormalTexture?.Scale ?? 1, material?.OcclusionTexture?.Strength ?? 1),
+            new Vector4(emissive == null ? Vector3.Zero : new Vector3(emissive[0], emissive[1], emissive[2]), material?.AlphaCutoff ?? 0.5f),
+            material?.AlphaMode.Equals(glTFLoader.Schema.Material.AlphaModeEnum.MASK) == true ? 1u :
+                material?.AlphaMode.Equals(glTFLoader.Schema.Material.AlphaModeEnum.BLEND) == true ? 2u : 0u,
+            material?.DoubleSided ?? false,
+            await LoadTexture(pbr?.BaseColorTexture?.Index, pbr?.BaseColorTexture?.TexCoord ?? 0),
+            await LoadTexture(pbr?.MetallicRoughnessTexture?.Index, pbr?.MetallicRoughnessTexture?.TexCoord ?? 0),
+            await LoadTexture(material?.NormalTexture?.Index, material?.NormalTexture?.TexCoord ?? 0),
+            await LoadTexture(material?.OcclusionTexture?.Index, material?.OcclusionTexture?.TexCoord ?? 0),
+            await LoadTexture(material?.EmissiveTexture?.Index, material?.EmissiveTexture?.TexCoord ?? 0));
+        return new GltfModel(vertices, indices, data);
+
+        async Task<TextureData> LoadTexture(int? index, int texCoord)
         {
-            if (textureInfo.TexCoord != 0)
-                throw new NotSupportedException("The unlit example uses TEXCOORD_0 only.");
-            var texture = model.Textures[textureInfo.Index];
+            if (texCoord is < 0 or > 1)
+                throw new NotSupportedException("Only TEXCOORD_0 and TEXCOORD_1 are supported.");
+            if (index == null)
+                return new TextureData(null, texCoord, null);
+            if ((texCoord == 0 && uv == null) || (texCoord == 1 && uv1 == null))
+                throw new InvalidDataException($"Texture references missing TEXCOORD_{texCoord}.");
+            var texture = model.Textures[index.Value];
             var source = model.Images[texture.Source ?? throw new InvalidDataException("Texture has no image source.")];
+            byte[] image;
             if (source.Uri != null)
                 image = await ReadUri(source.Uri);
             else if (source.BufferView is { } viewIndex)
@@ -165,8 +201,8 @@ internal sealed record UnlitGltfModel(UnlitGltfModel.Vertex[] Vertices, uint[] I
                 image = buffers[view.Buffer].AsSpan(view.ByteOffset, view.ByteLength).ToArray();
             }
             else
-                throw new InvalidDataException("Base color image has no data.");
+                throw new InvalidDataException("Texture image has no data.");
+            return new TextureData(image, texCoord, texture.Sampler.HasValue ? model.Samplers[texture.Sampler.Value] : null);
         }
-        return new UnlitGltfModel(vertices, indices, baseColor, image);
     }
 }
