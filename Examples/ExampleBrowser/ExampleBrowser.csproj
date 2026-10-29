@@ -36,15 +36,12 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="CopyAssets" BeforeTargets="AssignTargetPaths">
-        <ItemGroup>
-            <AssetsSourceFiles Include="..\Assets\**\*.*" />
-        </ItemGroup>
-        <MakeDir Directories="wwwroot"/>
-        <Copy
-                SourceFiles="@(AssetsSourceFiles)"
-                DestinationFolder="wwwroot/%(RecursiveDir)"
-                SkipUnchangedFiles="true" />
-    </Target>
+    <ItemGroup>
+        <Content Include="..\Assets\**\*"
+                 Exclude="..\Assets\**\.DS_Store"
+                 Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)"
+                 ContentRoot="$(MSBuildProjectDirectory)\..\Assets\"
+                 CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
 
 </Project>
