@@ -84,7 +84,7 @@ public static unsafe class WebGPUTexturedQuad
 		} //Get device
 
 		IWebGpuView webGpuView = new WebGpuSdlView(_Window);
-		_Example = new ExampleMetallicRoughness(_Instance, _Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
+		_Example = new ExampleSpecularGlossiness(_Instance, _Device, webGpuView, _SurfaceCapabilities, _Surface, new ResourcesProvider());
 		_Example.OnLoad().Wait();
 		webGpuView.Render += _Example.WindowOnRender;
 		webGpuView.FramebufferResize += _Example.FramebufferResize;
