@@ -15,15 +15,20 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
     public Vector4 BaseColor => Material.BaseColorFactor;
     public byte[]? BaseColorImage => Material.BaseColorTexture.Image;
 
-    internal sealed record TextureData(byte[]? Image, int TexCoord, Sampler? Sampler);
+    internal sealed record TextureData(byte[]? Image, int TexCoord, Sampler? Sampler)
+    {
+        public Matrix3x2 Transform { get; init; } = Matrix3x2.Identity;
+    }
     internal sealed record MaterialData(Vector4 BaseColorFactor, Vector4 MetallicRoughnessNormalOcclusion,
         Vector4 EmissiveAlphaCutoff, uint AlphaMode, bool DoubleSided,
         TextureData BaseColorTexture, TextureData MetallicRoughnessTexture, TextureData NormalTexture,
         TextureData OcclusionTexture, TextureData EmissiveTexture,
-        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat);
+        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat, SheenData Sheen);
 
     internal sealed record ClearcoatData(float Factor, float Roughness, float NormalScale,
         TextureData Texture, TextureData RoughnessTexture, TextureData NormalTexture);
+
+    internal sealed record SheenData(Vector3 Color, float Roughness, TextureData ColorTexture, TextureData RoughnessTexture);
 
     internal sealed record SceneMesh(GltfModel Model, Matrix4x4 Transform);
     [StructLayout(LayoutKind.Sequential)]
@@ -100,7 +105,8 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
             string text = await resources.LoadTextAsync(path);
             var model = Interface.DeserializeModel(text);
             foreach (string extension in model.ExtensionsRequired ?? [])
-                if (extension is not ("KHR_materials_pbrSpecularGlossiness" or "KHR_materials_clearcoat"))
+                if (extension is not ("KHR_materials_pbrSpecularGlossiness" or "KHR_materials_clearcoat"
+                    or "KHR_materials_sheen" or "KHR_texture_transform"))
                     throw new NotSupportedException($"Unsupported required glTF extension: {extension}.");
             using var document = JsonDocument.Parse(text);
             var loader = new Loader(resources, path[..(path.LastIndexOf('/') + 1)], model, document.RootElement.Clone());
@@ -238,31 +244,32 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
 
             var material = primitive.Material.HasValue ? model.Materials[primitive.Material.Value] : null;
             var pbr = material?.PbrMetallicRoughness;
-            JsonElement sg = default;
-            if (primitive.Material is { } materialIndex &&
-                json.GetProperty("materials")[materialIndex].TryGetProperty("extensions", out var extensions))
-                extensions.TryGetProperty("KHR_materials_pbrSpecularGlossiness", out sg);
-            JsonElement coat = default;
-            if (primitive.Material is { } coatMaterialIndex &&
-                json.GetProperty("materials")[coatMaterialIndex].TryGetProperty("extensions", out var coatExtensions))
-                coatExtensions.TryGetProperty("KHR_materials_clearcoat", out coat);
+            JsonElement Property(JsonElement parent, string name) => parent.ValueKind == JsonValueKind.Object && parent.TryGetProperty(name, out var value)
+                ? value : default;
+            var materialJson = primitive.Material is { } materialIndex ? json.GetProperty("materials")[materialIndex] : default;
+            var extensions = Property(materialJson, "extensions");
+            var sg = Property(extensions, "KHR_materials_pbrSpecularGlossiness");
+            var coat = Property(extensions, "KHR_materials_clearcoat");
+            var sheen = Property(extensions, "KHR_materials_sheen");
+            var sheenColor = Property(sheen, "sheenColorFactor");
+            var sheenRoughness = Property(sheen, "sheenRoughnessFactor");
+            async Task<TextureData> ExtensionTexture(JsonElement parent, string name)
+            {
+                var value = Property(parent, name);
+                return value.ValueKind != JsonValueKind.Object ? new TextureData(null, 0, null)
+                    : await LoadTexture(value.GetProperty("index").GetInt32(), value.TryGetProperty("texCoord", out var tc) ? tc.GetInt32() : 0, value);
+            }
             float CoatFactor(string name, float fallback) => coat.ValueKind == JsonValueKind.Object && coat.TryGetProperty(name, out var value)
                 ? value.GetSingle() : fallback;
-            async Task<TextureData> CoatTexture(string name)
-            {
-                if (coat.ValueKind != JsonValueKind.Object || !coat.TryGetProperty(name, out var value))
-                    return new TextureData(null, 0, null);
-                return await LoadTexture(value.GetProperty("index").GetInt32(), value.TryGetProperty("texCoord", out var tc) ? tc.GetInt32() : 0);
-            }
             float coatNormalScale = coat.ValueKind == JsonValueKind.Object && coat.TryGetProperty("clearcoatNormalTexture", out var coatNormal)
                 && coatNormal.TryGetProperty("scale", out var coatScale) ? coatScale.GetSingle() : 1;
             bool specGloss = sg.ValueKind == JsonValueKind.Object;
             float[]? Array(string name) => specGloss && sg.TryGetProperty(name, out var value)
                 ? value.EnumerateArray().Select(x => x.GetSingle()).ToArray() : null;
-            (int? Index, int UV) Texture(string name)
+            (int? Index, int UV, JsonElement Info) Texture(string name)
             {
-                if (!specGloss || !sg.TryGetProperty(name, out var value)) return (null, 0);
-                return (value.GetProperty("index").GetInt32(), value.TryGetProperty("texCoord", out var uvSet) ? uvSet.GetInt32() : 0);
+                if (!specGloss || !sg.TryGetProperty(name, out var value)) return (null, 0, default);
+                return (value.GetProperty("index").GetInt32(), value.TryGetProperty("texCoord", out var uvSet) ? uvSet.GetInt32() : 0, value);
             }
             var diffuseTexture = Texture("diffuseTexture");
             var specularTexture = Texture("specularGlossinessTexture");
@@ -277,23 +284,45 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
                 material?.AlphaMode.Equals(glTFLoader.Schema.Material.AlphaModeEnum.MASK) == true ? 1u :
                     material?.AlphaMode.Equals(glTFLoader.Schema.Material.AlphaModeEnum.BLEND) == true ? 2u : 0u,
                 material?.DoubleSided ?? false,
-                await LoadTexture(specGloss ? diffuseTexture.Index : pbr?.BaseColorTexture?.Index, specGloss ? diffuseTexture.UV : pbr?.BaseColorTexture?.TexCoord ?? 0),
-                await LoadTexture(specGloss ? specularTexture.Index : pbr?.MetallicRoughnessTexture?.Index, specGloss ? specularTexture.UV : pbr?.MetallicRoughnessTexture?.TexCoord ?? 0),
-                await LoadTexture(material?.NormalTexture?.Index, material?.NormalTexture?.TexCoord ?? 0),
-                await LoadTexture(material?.OcclusionTexture?.Index, material?.OcclusionTexture?.TexCoord ?? 0),
-                await LoadTexture(material?.EmissiveTexture?.Index, material?.EmissiveTexture?.TexCoord ?? 0),
+                await LoadTexture(specGloss ? diffuseTexture.Index : pbr?.BaseColorTexture?.Index, specGloss ? diffuseTexture.UV : pbr?.BaseColorTexture?.TexCoord ?? 0,
+                    specGloss ? diffuseTexture.Info : Property(Property(materialJson, "pbrMetallicRoughness"), "baseColorTexture")),
+                await LoadTexture(specGloss ? specularTexture.Index : pbr?.MetallicRoughnessTexture?.Index, specGloss ? specularTexture.UV : pbr?.MetallicRoughnessTexture?.TexCoord ?? 0,
+                    specGloss ? specularTexture.Info : Property(Property(materialJson, "pbrMetallicRoughness"), "metallicRoughnessTexture")),
+                await LoadTexture(material?.NormalTexture?.Index, material?.NormalTexture?.TexCoord ?? 0, Property(materialJson, "normalTexture")),
+                await LoadTexture(material?.OcclusionTexture?.Index, material?.OcclusionTexture?.TexCoord ?? 0, Property(materialJson, "occlusionTexture")),
+                await LoadTexture(material?.EmissiveTexture?.Index, material?.EmissiveTexture?.TexCoord ?? 0, Property(materialJson, "emissiveTexture")),
                 new Vector4(specular == null ? Vector3.One : new Vector3(specular[0], specular[1], specular[2]),
                     specGloss && sg.TryGetProperty("glossinessFactor", out var gloss) ? gloss.GetSingle() : 1), specGloss,
                 new ClearcoatData(CoatFactor("clearcoatFactor", 0), CoatFactor("clearcoatRoughnessFactor", 0), coatNormalScale,
-                    await CoatTexture("clearcoatTexture"), await CoatTexture("clearcoatRoughnessTexture"), await CoatTexture("clearcoatNormalTexture")));
+                    await ExtensionTexture(coat, "clearcoatTexture"), await ExtensionTexture(coat, "clearcoatRoughnessTexture"), await ExtensionTexture(coat, "clearcoatNormalTexture")),
+                new SheenData(sheenColor.ValueKind == JsonValueKind.Array
+                        ? new Vector3(sheenColor[0].GetSingle(), sheenColor[1].GetSingle(), sheenColor[2].GetSingle()) : Vector3.Zero,
+                    sheenRoughness.ValueKind == JsonValueKind.Number ? sheenRoughness.GetSingle() : 0,
+                    await ExtensionTexture(sheen, "sheenColorTexture"), await ExtensionTexture(sheen, "sheenRoughnessTexture")));
             return new GltfModel(vertices, indices, data);
 
-            async Task<TextureData> LoadTexture(int? index, int texCoord)
+            async Task<TextureData> LoadTexture(int? index, int texCoord, JsonElement info = default)
             {
+                var transform = Matrix3x2.Identity;
+                var textureTransform = Property(Property(info, "extensions"), "KHR_texture_transform");
+                if (textureTransform.ValueKind == JsonValueKind.Object)
+                {
+                    var scale = Property(textureTransform, "scale");
+                    var offset = Property(textureTransform, "offset");
+                    var rotation = Property(textureTransform, "rotation");
+                    var uvSet = Property(textureTransform, "texCoord");
+                    if (uvSet.ValueKind == JsonValueKind.Number) texCoord = uvSet.GetInt32();
+                    // Row-vector equivalent of glTF's translation * rotation * scale.
+                    transform = Matrix3x2.CreateScale(scale.ValueKind == JsonValueKind.Array
+                            ? new Vector2(scale[0].GetSingle(), scale[1].GetSingle()) : Vector2.One)
+                        * Matrix3x2.CreateRotation(rotation.ValueKind == JsonValueKind.Number ? rotation.GetSingle() : 0)
+                        * Matrix3x2.CreateTranslation(offset.ValueKind == JsonValueKind.Array
+                            ? new Vector2(offset[0].GetSingle(), offset[1].GetSingle()) : Vector2.Zero);
+                }
                 if (texCoord is < 0 or > 1)
                     throw new NotSupportedException("Only TEXCOORD_0 and TEXCOORD_1 are supported.");
                 if (index == null)
-                    return new TextureData(null, texCoord, null);
+                    return new TextureData(null, texCoord, null) { Transform = transform };
                 if ((texCoord == 0 && uv == null) || (texCoord == 1 && uv1 == null))
                     throw new InvalidDataException($"Texture references missing TEXCOORD_{texCoord}.");
                 var texture = model.Textures[index.Value];
@@ -308,7 +337,7 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
                 }
                 else
                     throw new InvalidDataException("Texture image has no data.");
-                return new TextureData(image, texCoord, texture.Sampler.HasValue ? model.Samplers[texture.Sampler.Value] : null);
+                return new TextureData(image, texCoord, texture.Sampler.HasValue ? model.Samplers[texture.Sampler.Value] : null) { Transform = transform };
             }
         }
     }
