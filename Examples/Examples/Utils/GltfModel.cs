@@ -23,12 +23,15 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
         Vector4 EmissiveAlphaCutoff, uint AlphaMode, bool DoubleSided,
         TextureData BaseColorTexture, TextureData MetallicRoughnessTexture, TextureData NormalTexture,
         TextureData OcclusionTexture, TextureData EmissiveTexture,
-        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat, SheenData Sheen);
+        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat, SheenData Sheen, TransmissionData Transmission);
 
     internal sealed record ClearcoatData(float Factor, float Roughness, float NormalScale,
         TextureData Texture, TextureData RoughnessTexture, TextureData NormalTexture);
 
     internal sealed record SheenData(Vector3 Color, float Roughness, TextureData ColorTexture, TextureData RoughnessTexture);
+
+    internal sealed record TransmissionData(float Factor, float Ior, float Thickness,
+        Vector3 AttenuationColor, float AttenuationDistance, TextureData Texture, TextureData ThicknessTexture);
 
     internal sealed record SceneMesh(GltfModel Model, Matrix4x4 Transform);
     [StructLayout(LayoutKind.Sequential)]
@@ -106,7 +109,8 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
             var model = Interface.DeserializeModel(text);
             foreach (string extension in model.ExtensionsRequired ?? [])
                 if (extension is not ("KHR_materials_pbrSpecularGlossiness" or "KHR_materials_clearcoat"
-                    or "KHR_materials_sheen" or "KHR_texture_transform"))
+                    or "KHR_materials_sheen" or "KHR_texture_transform"
+                    or "KHR_materials_transmission" or "KHR_materials_ior" or "KHR_materials_volume"))
                     throw new NotSupportedException($"Unsupported required glTF extension: {extension}.");
             using var document = JsonDocument.Parse(text);
             var loader = new Loader(resources, path[..(path.LastIndexOf('/') + 1)], model, document.RootElement.Clone());
@@ -251,6 +255,12 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
             var sg = Property(extensions, "KHR_materials_pbrSpecularGlossiness");
             var coat = Property(extensions, "KHR_materials_clearcoat");
             var sheen = Property(extensions, "KHR_materials_sheen");
+            var transmission = Property(extensions, "KHR_materials_transmission");
+            var volume = Property(extensions, "KHR_materials_volume");
+            var ior = Property(Property(extensions, "KHR_materials_ior"), "ior");
+            float Number(JsonElement parent, string name, float fallback) => Property(parent, name) is var value
+                && value.ValueKind == JsonValueKind.Number ? value.GetSingle() : fallback;
+            var attenuation = Property(volume, "attenuationColor");
             var sheenColor = Property(sheen, "sheenColorFactor");
             var sheenRoughness = Property(sheen, "sheenRoughnessFactor");
             async Task<TextureData> ExtensionTexture(JsonElement parent, string name)
@@ -298,7 +308,13 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
                 new SheenData(sheenColor.ValueKind == JsonValueKind.Array
                         ? new Vector3(sheenColor[0].GetSingle(), sheenColor[1].GetSingle(), sheenColor[2].GetSingle()) : Vector3.Zero,
                     sheenRoughness.ValueKind == JsonValueKind.Number ? sheenRoughness.GetSingle() : 0,
-                    await ExtensionTexture(sheen, "sheenColorTexture"), await ExtensionTexture(sheen, "sheenRoughnessTexture")));
+                    await ExtensionTexture(sheen, "sheenColorTexture"), await ExtensionTexture(sheen, "sheenRoughnessTexture")),
+                new TransmissionData(Number(transmission, "transmissionFactor", 0),
+                    ior.ValueKind == JsonValueKind.Number ? ior.GetSingle() : 1.5f, Number(volume, "thicknessFactor", 0),
+                    attenuation.ValueKind == JsonValueKind.Array
+                        ? new Vector3(attenuation[0].GetSingle(), attenuation[1].GetSingle(), attenuation[2].GetSingle()) : Vector3.One,
+                    Number(volume, "attenuationDistance", float.PositiveInfinity),
+                    await ExtensionTexture(transmission, "transmissionTexture"), await ExtensionTexture(volume, "thicknessTexture")));
             return new GltfModel(vertices, indices, data);
 
             async Task<TextureData> LoadTexture(int? index, int texCoord, JsonElement info = default)
