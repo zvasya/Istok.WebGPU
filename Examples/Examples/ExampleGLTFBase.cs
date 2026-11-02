@@ -53,7 +53,7 @@ public abstract class ExampleGLTFBase : ExampleBase
     }
 
     // These blocks preserve the existing WGSL layouts: 112 bytes for Clearcoat/Sheen,
-    // 128 bytes for Transmission/Volume (the latter adds attenuationColor).
+    // 128 bytes for Transmission/Volume, 144 bytes for Specular + Sheen.
     [StructLayout(LayoutKind.Sequential)]
     private struct MaterialHeader
     {
@@ -65,7 +65,7 @@ public abstract class ExampleGLTFBase : ExampleBase
     {
         public uint BaseColorUV, MetallicRoughnessUV, NormalUV, OcclusionUV;
         public uint EmissiveUV, AlphaMode, TargetSrgb, Padding;
-        public uint EffectUV0, EffectUV1, EffectUV2, EffectPadding;
+        public uint EffectUV0, EffectUV1, EffectUV2, EffectUV3;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -85,6 +85,14 @@ public abstract class ExampleGLTFBase : ExampleBase
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    private struct SpecularMaterialData
+    {
+        public MaterialHeader Header;
+        public Vector4 Sheen, Specular, Optics; // RGB/roughness, RGB/strength, IOR
+        public MaterialCoordinates Coordinates;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     private struct TextureTransform
     {
         public Vector4 U, V;
@@ -96,7 +104,7 @@ public abstract class ExampleGLTFBase : ExampleBase
     {
     }
 
-    protected enum GLTFMaterialType { Clearcoat, Sheen, Transmission }
+    protected enum GLTFMaterialType { Clearcoat, Sheen, Transmission, Specular }
 
     protected abstract string ModelPath { get; }
     protected abstract string ExampleName { get; }
@@ -108,12 +116,14 @@ public abstract class ExampleGLTFBase : ExampleBase
     protected virtual Matrix4x4 ModelTransform(float time) => Matrix4x4.Identity;
 
     private bool CaptureOpaqueBackground => MaterialType == GLTFMaterialType.Transmission;
+    private bool HasSheen => MaterialType is GLTFMaterialType.Sheen or GLTFMaterialType.Specular;
     private bool HasUVTransforms => MaterialType != GLTFMaterialType.Clearcoat;
     private string ShaderPath => MaterialType switch
     {
         GLTFMaterialType.Clearcoat => "Shaders/example_clearcoat.wgsl",
         GLTFMaterialType.Sheen => "Shaders/example_sheen.wgsl",
         GLTFMaterialType.Transmission => "Shaders/example_transmission.wgsl",
+        GLTFMaterialType.Specular => "Shaders/example_specular.wgsl",
         _ => throw new ArgumentOutOfRangeException(),
     };
 
@@ -137,7 +147,7 @@ public abstract class ExampleGLTFBase : ExampleBase
             await LoadEnvironmentAsync("Textures/piazza_bologni_1k_irradiance.ktx", 6),
             await LoadEnvironmentAsync("Textures/brdfLUT.ktx", 1),
         };
-        if (MaterialType == GLTFMaterialType.Sheen)
+        if (HasSheen)
             environment.Add(await LoadEnvironmentAsync("Textures/piazza_bologni_1k_charlie.ktx", 6));
         foreach (var mesh in scene) CreateMesh(mesh, environment);
         if (CaptureOpaqueBackground)
@@ -184,6 +194,8 @@ public abstract class ExampleGLTFBase : ExampleBase
         {
             GLTFMaterialType.Clearcoat => [..common, material.Clearcoat.Texture, material.Clearcoat.RoughnessTexture, material.Clearcoat.NormalTexture],
             GLTFMaterialType.Sheen => [..common, material.Sheen.ColorTexture, material.Sheen.RoughnessTexture],
+            GLTFMaterialType.Specular => [..common, material.Sheen.ColorTexture, material.Sheen.RoughnessTexture,
+                material.Specular.Texture, material.Specular.ColorTexture],
             GLTFMaterialType.Transmission => [..common, material.Transmission.Texture, material.Transmission.ThicknessTexture],
             _ => throw new ArgumentOutOfRangeException(),
         };
@@ -200,7 +212,7 @@ public abstract class ExampleGLTFBase : ExampleBase
         var sources = MaterialTextures(material);
         for (int i = 0; i < sources.Length; i++)
         {
-            var texture = SampledTexture.FromImage(_device, sources[i], i is 0 or 4 || (MaterialType == GLTFMaterialType.Sheen && i == 5),
+            var texture = SampledTexture.FromImage(_device, sources[i], i is 0 or 4 || (HasSheen && i == 5) || (MaterialType == GLTFMaterialType.Specular && i == 8),
                 i == 2 || (MaterialType == GLTFMaterialType.Clearcoat && i == 7)
                     ? new Rgba32(128, 128, 255, 255) : new Rgba32(255, 255, 255, 255), _mipmaps);
             textures.Add(texture);
@@ -326,7 +338,7 @@ public abstract class ExampleGLTFBase : ExampleBase
                 new() { binding = 2, textureView = environment[2].View },
                 new() { binding = 3, sampler = environment[0].Sampler },
             };
-            if (MaterialType == GLTFMaterialType.Sheen)
+            if (HasSheen)
                 environmentEntries.Add(new WGPUBindGroupEntry { binding = 4, textureView = environment[3].View });
             draw.EnvironmentBindGroup = _device.CreateBindGroup(new GPUBindGroupDescriptor
             {
@@ -368,6 +380,18 @@ public abstract class ExampleGLTFBase : ExampleBase
                 coordinates.EffectUV0 = (uint)material.Sheen.ColorTexture.TexCoord;
                 coordinates.EffectUV1 = (uint)material.Sheen.RoughnessTexture.TexCoord;
                 break;
+            case GLTFMaterialType.Specular:
+                coordinates.EffectUV0 = (uint)material.Sheen.ColorTexture.TexCoord;
+                coordinates.EffectUV1 = (uint)material.Sheen.RoughnessTexture.TexCoord;
+                coordinates.EffectUV2 = (uint)material.Specular.Texture.TexCoord;
+                coordinates.EffectUV3 = (uint)material.Specular.ColorTexture.TexCoord;
+                return CreateUniformBuffer(new SpecularMaterialData
+                {
+                    Header = header, Coordinates = coordinates,
+                    Sheen = new Vector4(material.Sheen.Color, material.Sheen.Roughness),
+                    Specular = new Vector4(material.Specular.Color, material.Specular.Factor),
+                    Optics = new Vector4(material.Transmission.Ior, 0, 0, 0),
+                });
             case GLTFMaterialType.Transmission:
                 effect = new Vector4(material.Transmission.Factor, material.Transmission.Ior, material.Transmission.Thickness,
                     float.IsPositiveInfinity(material.Transmission.AttenuationDistance) ? 0 : material.Transmission.AttenuationDistance);

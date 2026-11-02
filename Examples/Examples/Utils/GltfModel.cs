@@ -23,7 +23,7 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
         Vector4 EmissiveAlphaCutoff, uint AlphaMode, bool DoubleSided,
         TextureData BaseColorTexture, TextureData MetallicRoughnessTexture, TextureData NormalTexture,
         TextureData OcclusionTexture, TextureData EmissiveTexture,
-        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat, SheenData Sheen, TransmissionData Transmission);
+        Vector4 SpecularGlossinessFactor, bool SpecularGlossiness, ClearcoatData Clearcoat, SheenData Sheen, TransmissionData Transmission, SpecularData Specular);
 
     internal sealed record ClearcoatData(float Factor, float Roughness, float NormalScale,
         TextureData Texture, TextureData RoughnessTexture, TextureData NormalTexture);
@@ -32,6 +32,8 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
 
     internal sealed record TransmissionData(float Factor, float Ior, float Thickness,
         Vector3 AttenuationColor, float AttenuationDistance, TextureData Texture, TextureData ThicknessTexture);
+
+    internal sealed record SpecularData(float Factor, Vector3 Color, TextureData Texture, TextureData ColorTexture);
 
     internal sealed record SceneMesh(GltfModel Model, Matrix4x4 Transform);
     [StructLayout(LayoutKind.Sequential)]
@@ -110,7 +112,7 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
             foreach (string extension in model.ExtensionsRequired ?? [])
                 if (extension is not ("KHR_materials_pbrSpecularGlossiness" or "KHR_materials_clearcoat"
                     or "KHR_materials_sheen" or "KHR_texture_transform"
-                    or "KHR_materials_transmission" or "KHR_materials_ior" or "KHR_materials_volume"))
+                    or "KHR_materials_transmission" or "KHR_materials_ior" or "KHR_materials_volume" or "KHR_materials_specular"))
                     throw new NotSupportedException($"Unsupported required glTF extension: {extension}.");
             using var document = JsonDocument.Parse(text);
             var loader = new Loader(resources, path[..(path.LastIndexOf('/') + 1)], model, document.RootElement.Clone());
@@ -255,6 +257,8 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
             var sg = Property(extensions, "KHR_materials_pbrSpecularGlossiness");
             var coat = Property(extensions, "KHR_materials_clearcoat");
             var sheen = Property(extensions, "KHR_materials_sheen");
+            var specularExtension = Property(extensions, "KHR_materials_specular");
+            var specularColor = Property(specularExtension, "specularColorFactor");
             var transmission = Property(extensions, "KHR_materials_transmission");
             var volume = Property(extensions, "KHR_materials_volume");
             var ior = Property(Property(extensions, "KHR_materials_ior"), "ior");
@@ -314,7 +318,11 @@ internal sealed record GltfModel(GltfModel.Vertex[] Vertices, uint[] Indices, Gl
                     attenuation.ValueKind == JsonValueKind.Array
                         ? new Vector3(attenuation[0].GetSingle(), attenuation[1].GetSingle(), attenuation[2].GetSingle()) : Vector3.One,
                     Number(volume, "attenuationDistance", float.PositiveInfinity),
-                    await ExtensionTexture(transmission, "transmissionTexture"), await ExtensionTexture(volume, "thicknessTexture")));
+                    await ExtensionTexture(transmission, "transmissionTexture"), await ExtensionTexture(volume, "thicknessTexture")),
+                new SpecularData(Number(specularExtension, "specularFactor", 1),
+                    specularColor.ValueKind == JsonValueKind.Array
+                        ? new Vector3(specularColor[0].GetSingle(), specularColor[1].GetSingle(), specularColor[2].GetSingle()) : Vector3.One,
+                    await ExtensionTexture(specularExtension, "specularTexture"), await ExtensionTexture(specularExtension, "specularColorTexture")));
             return new GltfModel(vertices, indices, data);
 
             async Task<TextureData> LoadTexture(int? index, int texCoord, JsonElement info = default)
